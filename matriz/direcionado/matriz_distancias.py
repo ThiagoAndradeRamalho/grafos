@@ -53,6 +53,75 @@ class Grafo:
             cont = cont + 1
         print(cont)
         return cont
+
+    # def busca_largura(self):
+    #     t = 0
+    #     fila = []
+
+    #     for i in range(self.vertices):
+    #         l[i] = 0
+    #         nivel[i] = 0
+    #         pai[i] = None
+
+    #         while l[i] == 0:
+    #             t = t + 1
+    #             l[i] = t
+    #             fila.append(i)
+    #     l = 0
+    #     nivel = 0
+    #     pai = None
+
+    #     while
+
+
+    def busca_largura(self, v):
+
+        vVisitados = [False] * (len(self.grafo))
+
+        fila = []
+
+        fila.append(v)
+        vVisitados[v] = True
+
+        while fila:
+            fila.pop(0)
+
+            for i in self.grafo[v]:
+                if vVisitados[i] == False:
+                    fila.append(i)
+                    vVisitados[i] = True
+
+        return vVisitados
+    
+    def simplesConexo(self):
+
+        if self.vertices == 0:
+            return True #grafo sem vertice também é simplesmente conexo
+
+        v = next(iter((self.grafo))) #utilizo o next para pegar o primeiro já que posso começar de qualquer vertice alem de que com ele nao preciso fazer loops e sorteios para saber por qual vertice ira começar
+        visitados = self.busca_largura(v)
+
+        return len(visitados) == len(self.grafo)
+
+    def semiConexo(self):
+
+        for i in range(self.grafo):
+            visitados = self.busca_largura(i)
+            
+            if len(visitados) != len(self.grafo):
+                return False
+            
+        return True
+    
+
+    # def forteCpnexo(self):
+
+    #     for i in range(self.grafo):
+            
+    #         visitados
+
+    
+
         
     # def contagem_arestas(self):
     #     contador = sum(1 for i in range(self.vertices) for j in range(self.vertices) if self.grafo[i][j] is not None)
