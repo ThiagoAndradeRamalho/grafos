@@ -29,10 +29,22 @@ class Grafo:
     
     @property
     def vazio(self):
-        return self._vazio
+        if len(arestas) == 0:
+            self._vazio == True
+        self._vazio = False
     
     @property
     def completo(self):
+        nA = len(self.arestas)
+        if not self.direcionado:
+            nV = len(self.vertices)
+            a = (nV * (nV - 1)) / 2
+        else:
+            nV = len(self.vertices)
+            a = nV * (nV - 1)
+
+        if a == nA:
+            self._completo = True
         return self._completo
     
     def imprimir_lista_adjacentes(self):
@@ -94,9 +106,6 @@ class Grafo:
 
         return self._matriz_adjacencia
     
-
-
-
     def aresta_existe(self, o, d):
         for aresta in self._lista_arestas:
             return aresta.origem == o and aresta.destino == d
@@ -125,6 +134,8 @@ class Grafo:
                 self._matriz_incidencia[x][i] = -1
 
         return self._matriz_incidencia
+    
+
 
                 
 grafo = Grafo(direcionado=True)  # Se for direcionado, altere para True
