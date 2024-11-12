@@ -120,13 +120,8 @@ class Grafo:
             
     #         visitados
 
-    
 
-        
-    # def contagem_arestas(self):
-    #     contador = sum(1 for i in range(self.vertices) for j in range(self.vertices) if self.grafo[i][j] is not None)
-    #     print(f'Total de arestas: {contador}')
-    #     return contador
+    # def numCompomentesFortes(self)
 
     def mostra_matriz(self):
         print('Matriz de Adjacencia')
