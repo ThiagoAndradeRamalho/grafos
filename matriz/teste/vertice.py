@@ -4,7 +4,11 @@ class Vertice:
         self._rotulo = rotulo
         self._visitado = False
         self.posicaoVisitado = 0
-        self.pai = None
+        self._pai = None
+        self._tempo_descoberta = 0
+        self._tempo_termino = 0
+        self._nivel = 0
+        self._indice = 0
 
     @property
     def rotulo(self):
