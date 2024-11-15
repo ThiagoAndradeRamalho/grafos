@@ -4,7 +4,7 @@ from aresta import Aresta
 class Grafo:
 
     def __init__(self, direcionado):
-        self._lista_vertices = []
+        self._lista_vertices = {}
         self._lista_arestas = []
         self._matriz_adjacencia = []
         self._matriz_incidencia = []
@@ -16,11 +16,11 @@ class Grafo:
 
     @property
     def vertices(self):
-        return [str(vertice) for vertice in self._lista_vertices]    
+        return {vertice.rotulo: vertice for vertice in self._lista_vertices}
     
     @property
     def arestas(self):
-        return [str(areresta) for areresta in self._lista_arestas]
+        return {str(aresta): aresta for aresta in self._lista_arestas}
     
     @property
     def direcionado(self):
@@ -28,11 +28,7 @@ class Grafo:
     
     @property
     def vazio(self):
-        if len(arestas) == 0:
-            self._vazio == True
-        else:
-            self._vazio = False
-        return self._vazio
+        return len(self._lista_arestas) == 0
     
     @property
     def completo(self):
@@ -48,11 +44,14 @@ class Grafo:
             self._completo = True
         return self._completo
     
+    def imprimir_vertices(self):
+        for rotulo, vertice in self.vertices.items():
+            print(vertice)
+    
     def imprimir_lista_adjacentes(self):
-        self.set_adjacentes()
-        print('Lista de Adjacência')
+        # Imprime as listas de adjacência
         for vertice, adjacentes in self._lista_adjacentes.items():
-            print(f'Vertice {vertice}: {adjacentes}')
+            print(f"Vértice {vertice}: {adjacentes}")
 
     def imprimir_matriz_adjacentes(self):
         self.set_matriz_adjacencia()
@@ -61,10 +60,9 @@ class Grafo:
             print(self._matriz_adjacencia[i])
 
     def imprimir_matriz_incidencia(self):
-        self.set_matriz_incidencia()
-        print('Matriz de Incidencia')
-        for i in range(len(self._matriz_incidencia)):
-            print(self._matriz_incidencia[i])
+        matriz_incidencia = self.set_matriz_incidencia()
+        for linha in matriz_incidencia:
+            print(linha)
 
     def num_vertices(self):
         return len(self._lista_vertices)
@@ -75,86 +73,123 @@ class Grafo:
     def adjacentes(self, vertice):
         return [str(i) for i in self._lista_adjacentes[vertice]]
     
-    def add_vertice(self, vertices):
-        self._lista_vertices = [Vertice(rotulo) for rotulo in vertices]
+    def add_vertice(self, rotulo):
+        if rotulo not in self._lista_vertices:
+            self._lista_vertices[rotulo] = Vertice(rotulo)  # Usa o rótulo como chave
+        else:
+            print(f"Erro: vértice {rotulo} já existe.")
 
+
+    # inicialmente pensei em toda vez que eu add uma aresta/vertice chamaria o set_lista_adjacentes, mas isso tornaria um codigo um pouco caro, ent toda vez que eu add, eu add tbm nas listas.
+    # def add_aresta(self, origem, destino, peso):
+    #     # Verifica se ambos os vértices estão presentes no grafo antes de adicionar a aresta
+    #     if origem in [v.rotulo for v in self._lista_vertices] and destino in [v.rotulo for v in self._lista_vertices]:
+    #         nova_aresta = Aresta(origem, destino, peso)
+    #         self._lista_arestas.append(nova_aresta)  # Adiciona a aresta à lista de arestas
+    #         self._lista_adjacentes[origem].append(destino)  # Atualiza a lista de adjacência
+    #     else:
+    #         print(f"Erro: vértice(s) {origem} ou {destino} não encontrado(s).")
+
+
+    # add_aresta novo
     def add_aresta(self, origem, destino, peso):
-        # Verifica se ambos os vértices estão presentes no grafo antes de adicionar a aresta
-        if origem in [v.rotulo for v in self._lista_vertices] and destino in [v.rotulo for v in self._lista_vertices]:
+        # Verifica se os vértices existem no grafo
+        if origem in self._lista_vertices and destino in self._lista_vertices:
             nova_aresta = Aresta(origem, destino, peso)
-            self._lista_arestas.append(nova_aresta)  # Adiciona a aresta à lista de arestas
-            self._lista_adjacentes[origem].append(destino)  # Atualiza a lista de adjacência
+            self._lista_arestas.append(nova_aresta)
+            # Cria as entradas de adjacência caso ainda não existam
+            if origem not in self._lista_adjacentes:
+                self._lista_adjacentes[origem] = []
+            if destino not in self._lista_adjacentes:
+                self._lista_adjacentes[destino] = []
         else:
             print(f"Erro: vértice(s) {origem} ou {destino} não encontrado(s).")
 
     def remover_aresta(self, origem, destino):
+        for chave, aresta in list(self.arestas.items()):
+            if aresta.origem == origem and aresta.destino == destino:
+                del self.arestas[chave]
+
+                if origem in self._lista_adjacentes:
+                    self._lista_adjacentes[origem].remove(destino)
+
+                if not self._direcionado:
+                    self._lista_adjacentes[destino].remove(origem)
+
+                break
+        return "Aresta {origem} {destino} não encontrada"
+
+
+
         # Cria um conjunto de arestas para otimizar a verificação de existência
-        aresta = (origem, destino)
+        # aresta = (origem, destino)
 
-        if not self.aresta_existe(origem, destino):
-            print(f"A aresta ({origem}, {destino}) não existe no grafo.")
-            return
+        # if not self.aresta_existe(origem, destino):
+        #     print(f"A aresta ({origem}, {destino}) não existe no grafo.")
+        #     return
 
-        # Remove a aresta diretamente, criando uma nova lista sem a aresta a ser removida
-        self._lista_arestas = [a for a in self._lista_arestas if not (a.origem == origem and a.destino == destino)]
-        print(f"A aresta ({origem}, {destino}) foi removida com sucesso.")
+        # # Remove a aresta diretamente, criando uma nova lista sem a aresta a ser removida
+        # self._lista_arestas = [a for a in self._lista_arestas if not (a.origem == origem and a.destino == destino)]
+        # print(f"A aresta ({origem}, {destino}) foi removida com sucesso.")
 
     def set_lista_adjacentes(self):
-        for i in self._lista_vertices:
-            self._lista_adjacentes[i.rotulo] = []
+        for rotulo, vertice in self._lista_vertices.items():
+            self._lista_adjacentes[rotulo] = []
 
     def set_adjacentes(self):
+        # Inicializa as listas de adjacência
+        for rotulo in self._lista_vertices:
+            self._lista_adjacentes[rotulo] = []
+
         if not self.direcionado:
-            for vertice in self._lista_vertices:
-                for aresta in self._lista_arestas:
-                    if vertice.rotulo == aresta.origem:
-                        self._lista_adjacentes[vertice.rotulo].append(aresta.destino)
-                    elif vertice.rotulo == aresta.destino:
-                        self._lista_adjacentes[vertice.rotulo].append(aresta.origem)
+            # Caso não seja direcionado, adiciona as arestas em ambos os sentidos
+            for aresta in self._lista_arestas:
+                # Adiciona as arestas para cada vértice
+                self._lista_adjacentes[aresta.origem].append(aresta.destino)
+                self._lista_adjacentes[aresta.destino].append(aresta.origem)
         else:
-            for vertice in self._lista_vertices:
-                for aresta in self._lista_arestas:
-                    if vertice.rotulo == aresta.origem:
-                        self._lista_adjacentes[vertice.rotulo].append(aresta.destino)
+            # Caso seja direcionado, adiciona a aresta no sentido origem -> destino
+            for aresta in self._lista_arestas:
+                self._lista_adjacentes[aresta.origem].append(aresta.destino)
 
     def set_matriz_adjacencia(self):
-        n = len(self._lista_vertices)
-        rotulos = [v.rotulo for v in self._lista_vertices]
-        self._matriz_adjacencia = [[0] * n for _ in range(n)]
+        rotulos = list(self._lista_vertices.keys())  # Obtenha uma lista dos rótulos
+        matriz = [[0] * len(rotulos) for _ in range(len(rotulos))]
+
         for aresta in self._lista_arestas:
-            i = rotulos.index(aresta.origem)
-            j = rotulos.index(aresta.destino)
+            origem_idx = rotulos.index(aresta.origem)
+            destino_idx = rotulos.index(aresta.destino)
+            matriz[origem_idx][destino_idx] = 1
 
-            self._matriz_adjacencia[i][j] = aresta.peso
-
-            if not self.direcionado:
-                self._matriz_adjacencia[j][i] = aresta.peso
-
-        return self._matriz_adjacencia
-    
-    def aresta_existe(self, o, d):
-        for aresta in self._lista_arestas:
-            return aresta.origem == o and aresta.destino == d
+        self.matriz_adjacente = matriz
+        
+        def aresta_existe(self, o, d):
+            for aresta in self.arestas.values():
+                if aresta.origem == o and aresta.destino == d:
+                    return True
+        return False
     
     def set_matriz_incidencia(self):
-        nV = self.num_vertices()
-        nA = self.num_arestas()
-        rotulos = [v.rotulo for v in self._lista_vertices]
-        self._matriz_incidencia = [[0] * nV for _ in range(nA)]
+        num_vertices = len(self.vertices)
+        num_arestas = len(self.arestas)
 
-        for x, aresta in enumerate(self._lista_arestas):
-            i = rotulos.index(aresta.origem)
-            j = rotulos.index(aresta.destino)
+        # Criação da matriz de incidência com zeros
+        matriz_incidencia = [[0] * num_arestas for _ in range(num_vertices)]
 
-            if not self._direcionado:
-                self._matriz_incidencia[x][j] = 1
-                self._matriz_incidencia[x][i] = 1
+        # Preenchendo a matriz com -1 e 1
+        for i, (origem, destino) in enumerate(self.arestas):
+            origem_idx = list(self.vertices.keys()).index(origem)
+            destino_idx = list(self.vertices.keys()).index(destino)
+
+            if self.direcionado:
+                matriz_incidencia[origem_idx][i] = -1  # Origem da aresta
+                matriz_incidencia[destino_idx][i] = 1  # Destino da aresta
             else:
-                self._matriz_incidencia[x][j] = 1
-                self._matriz_incidencia[x][i] = -1
+                matriz_incidencia[origem_idx][i] = 1  # Origem da aresta
+                matriz_incidencia[destino_idx][i] = 1  # Destino da aresta
 
-        return self._matriz_incidencia
-    
+        return matriz_incidencia
+        
     def busca_largura(self, vInicial):
 
         if vInicial not in [v.rotulo for v in self._lista_vertices]:
@@ -227,24 +262,63 @@ class Grafo:
     #     for v in self._lista_vertices:
     #         print(f"Vértice {v.rotulo}: descoberta={v._tempo_descoberta}, término={v._tempo_termino}, pai={v._pai}")
 
-    def busca_profundidade(self, vInicial):
-        if vInicial not in [v.rotulo for v in self._lista_vertices]:
-            print(f"O vértice {vInicial} não existe no grafo.")
-            return
+    # def busca_profundidade(self, vInicial):
+    #     if vInicial not in [v.rotulo for v in self._lista_vertices]:
+    #         print(f"O vértice {vInicial} não existe no grafo.")
+    #         return
         
-        mapa_vertices = {v.rotulo: v for v in self._lista_vertices}
-        vertices_visitados = set()  # Agora o conjunto de visitados está dentro da função
+    #     mapa_vertices = {v.rotulo: v for v in self._lista_vertices}
+    #     vertices_visitados = set()  # Agora o conjunto de visitados está dentro da função
 
-        def dfs_recursivo(v):
-            vertices_visitados.add(v.rotulo)  # Marca o vértice como visitado
-            for vizinho in self._lista_adjacentes[v.rotulo]:
-                if vizinho not in vertices_visitados:
-                    dfs_recursivo(mapa_vertices[vizinho])
+    #     def dfs_recursivo(v):
+    #         vertices_visitados.add(v.rotulo)  # Marca o vértice como visitado
+    #         for vizinho in self._lista_adjacentes[v.rotulo]:
+    #             if vizinho not in vertices_visitados:
+    #                 dfs_recursivo(mapa_vertices[vizinho])
 
-        # Inicia a DFS recursiva a partir do vértice inicial
-        dfs_recursivo(mapa_vertices[vInicial])
+    #     # Inicia a DFS recursiva a partir do vértice inicial
+    #     dfs_recursivo(mapa_vertices[vInicial])
 
-        return vertices_visitados  # Retorna os vértices visitados
+    #     return vertices_visitados  # Retorna os vértices visitados
+
+    def busca_profundidade(self, v):
+        if v not in self.vertices:
+            print(f"Erro: vértice {v} não encontrado.")
+            return []
+
+        t = 0
+        for vertice in self.vertices.values():
+            vertice._visitado = False
+            vertice._pai = None
+            vertice._tempo_descoberta = 0
+            vertice._tempo_termino = 0
+
+        ordem_visitados = []
+
+        def dfs(vertice):
+            nonlocal t
+            t += 1
+            vertice._visitado = True
+            vertice._tempo_descoberta = t
+            ordem_visitados.append(vertice.rotulo)
+
+            if vertice.rotulo in self._lista_adjacentes:
+                        for vizinho_rotulo in self._lista_adjacentes[vertice.rotulo]:
+                            vizinho = self.vertices[vizinho_rotulo]
+                            if not vizinho._visitado:
+                                vizinho._pai = vertice
+                                dfs(vizinho)
+
+            t += 1
+            vertice._tempo_termino = t
+
+        vertice_inicial = self.vertices[v]
+        dfs(vertice_inicial)
+
+        return ordem_visitados
+    
+
+    #toda vez eu tinha que refazer um codigo de busca em profundidade pra poder usar em diferentes contexto
 
 
 
@@ -316,8 +390,6 @@ class Grafo:
             self._lista_adjacentes[aresta.origem].add(aresta.destino)
             self._lista_adjacentes[aresta.destino].add(aresta.origem)
 
-
-
     def fortemente_conexo(self):
         return len(self.kosaraju()) == 1
 
@@ -372,10 +444,16 @@ class Grafo:
         return n
     
     def copiar_grafo(self):
+
+        print('Criando a copia do grafo')
+
         novo_grafo = Grafo(self._direcionado)
 
         for v in self._lista_vertices:
             novo_grafo.add_vertice(v.rotulo)
+            print(v)
+
+        print('Criando as arestas da copia')
         
         for aresta in self._lista_arestas:
             novo_grafo.add_aresta(aresta.origem, aresta.destino, aresta.peso)
@@ -400,6 +478,59 @@ class Grafo:
 
         return nNewComponentes != nComponentes
 
+    # def verificar_articulacao(self, vertice_remover):
+    #     """ Verifica se a remoção de um vértice desconecta o grafo """
+    #     # Copiar o grafo original para não alterar o grafo original
+    #     grafo_copia = self.copiar_grafo()
+        
+    #     # Verificar se o vértice existe
+    #     if vertice_remover not in [v.rotulo for v in grafo_copia._lista_vertices]:
+    #         print(f"O vértice {vertice_remover} não existe no grafo.")
+    #         return
+        
+    #     # Remover arestas associadas ao vértice
+    #     grafo_copia._lista_arestas = [aresta for aresta in grafo_copia._lista_arestas
+    #                                 if aresta.origem != vertice_remover and aresta.destino != vertice_remover]
+        
+    #     # Remover o vértice da lista de vértices
+    #     grafo_copia._lista_vertices = [v for v in grafo_copia._lista_vertices if v.rotulo != vertice_remover]
+        
+    #     # Recriar a lista de adjacentes após a remoção
+    #     grafo_copia.set_lista_adjacentes()
+        
+    #     # Verificar se o grafo copiado está conectado (usando DFS)
+    #     vertices_visitados = set()
+    
+    # def dfs(v):
+    #     vertices_visitados.add(v.rotulo)
+    #     for vizinho in grafo_copia._lista_adjacentes[v.rotulo]:
+    #         if vizinho not in vertices_visitados:
+    #             # Encontra o vértice vizinho pelo rótulo diretamente
+    #             vertice_vizinho = next((x for x in grafo_copia._lista_vertices if x.rotulo == vizinho), None)
+    #             if vertice_vizinho:
+    #                 dfs(vertice_vizinho)
+    
+    # # Iniciar a DFS a partir do primeiro vértice na lista
+    # if grafo_copia._lista_vertices:
+    #     dfs(grafo_copia._lista_vertices[0])
+
+    # # Verificar se todos os vértices foram visitados
+    # if len(vertices_visitados) == len(grafo_copia._lista_vertices):
+    #     print("O grafo sem o vértice", vertice_remover, "continua conectado.")
+    # else:
+    #     print("O grafo sem o vértice", vertice_remover, "não está conectado.")
+
+
+
+
+    def verificar_ponte(self, origem, destino):
+
+        grafo_copia = self.copiar_grafo()
+        
+        grafo_copia.remover_aresta(origem, destino)
+
+        # Verificar se todos os vértices foram visitados
+        return grafo_copia.num_componentes() != self.num_componentes()
 
 
         
@@ -411,28 +542,29 @@ class Grafo:
 grafo = Grafo(direcionado=True)  # Se for direcionado, altere para True
 
 # Adicionar Vértices
-grafo.add_vertice(['v1', 'v2', 'v3', 'v4', 'v5'])
-
-grafo.set_lista_adjacentes()
+for v in ['v1', 'v2', 'v3', 'v4', 'v5']:
+    grafo.add_vertice(v)
 
 # Adicionar Arestas
-arestas = [('v1', 'v2'), ('v2', 'v3'), ('v3', 'v4')]
+arestas = [('v1', 'v2'), ('v2', 'v3'), ('v1', 'v3')]
 pesos = [10, 20, 30]  # Exemplo de pesos para as arestas
 
 for (origem, destino), peso in zip(arestas, pesos):
     grafo.add_aresta(origem, destino, peso)
 
-
-
-
 # Adicionar Adjacentes
 grafo.set_adjacentes()
 
+print("Lista Adjacentes")
 grafo.imprimir_lista_adjacentes()
 
+print("Matriz Incidentes")
+grafo.imprimir_matriz_incidencia()
+
+print("Matriz Adjacentes")
 grafo.imprimir_matriz_adjacentes()
 
-grafo.imprimir_matriz_incidencia()
+
 
 # Imprimir Adjacentes para um Vértice Específico
 print("Vértices adjacentes a v1:", grafo.adjacentes('v1'))
@@ -447,24 +579,37 @@ print("Grafo vazio? "+p)
 p = str(grafo.completo)
 print("Grafo completo? "+p)
 
+p = str(grafo.aresta_existe('v1', 'v2'))
+print("Aresta v1 e v2 existe?", p)
 
 print('BFS')
 grafo.busca_largura('v1')
 
+print('imprimindo vertices')
+grafo.imprimir_vertices()
+
 print('DFS')
-grafo.busca_profundidade('v1')
+n = grafo.busca_profundidade('v1')
+print(n)
 
-componentes_fortemente_conexos = grafo.kosaraju()
-print("Componentes Fortemente Conexos:", componentes_fortemente_conexos)
+# componentes_fortemente_conexos = grafo.kosaraju()
+# print("Componentes Fortemente Conexos:", componentes_fortemente_conexos)
 
-p = str(grafo.fortemente_conexo())
-print('Grafo Fortemente Conexo?',p)
+# p = str(grafo.fortemente_conexo())
+# print('Grafo Fortemente Conexo?',p)
 
-p = str(grafo.semi_fortemente_conexo())
-print('Grafo Semi Fortemente Conexo?',p)
+# p = str(grafo.semi_fortemente_conexo())
+# print('Grafo Semi Fortemente Conexo?',p)
 
 p = str(grafo.num_componentes())
 print('Nuemro componentes?',p)
 
-p = str(grafo.ponte('v1', 'v2'))
-print('A aresta é ponte?',p)
+# p = str(grafo.ponte('v1', 'v2'))
+# print('A aresta é ponte?',p)
+
+# p = str(grafo.ponte('v1', 'v2'))
+# print('A aresta é ponte?',p)
+
+
+p = grafo.verificar_ponte('v1','v3')
+print("A aresta v1 v2 é ponte? ", p)
