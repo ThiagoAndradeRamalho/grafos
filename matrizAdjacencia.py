@@ -1,40 +1,34 @@
 class Grafo:
     def __init__(self, num_vertices, direcionado=False):
         self.num_vertices = num_vertices
-        self.grafo = {i: [] for i in range(1, num_vertices + 1)}  # Lista de adjacência
+        self.grafo = [[0] * num_vertices for _ in range(num_vertices)]  # Matriz de adjacência
         self.direcionado = direcionado
         self.vertices_ponderados = {}  # Ponderação dos vértices
         self.rotulos_vertices = {}  # Rótulos dos vértices
         self.arestas_ponderadas = {}  # Ponderação e rótulos das arestas
 
     # Funções de manipulação do grafo (adição e remoção de vértices e arestas)
-    def adicionar_aresta(self, vertice1, vertice2, direcionado=False):
-        if vertice1 not in self.grafo or vertice2 not in self.grafo:
+    def adicionar_aresta(self, vertice1, vertice2, peso=1, direcionado=False):
+        if vertice1 >= self.num_vertices or vertice2 >= self.num_vertices:
             raise ValueError("Um dos vértices fornecidos não existe.")
         if vertice1 == vertice2:
             raise ValueError("Não é permitido adicionar loops (aresta de um vértice para ele mesmo).")
-        if direcionado:
-            if vertice2 in self.grafo[vertice1]:
-                raise ValueError(f"Aresta {vertice1} -> {vertice2} já existe.")
-        else:
-            if vertice2 in self.grafo[vertice1] or vertice1 in self.grafo[vertice2]:
-                raise ValueError(f"Aresta entre {vertice1} e {vertice2} já existe.")
+        if self.grafo[vertice1][vertice2] != 0:
+            raise ValueError(f"Aresta entre {vertice1} e {vertice2} já existe.")
         
-        self.grafo[vertice1].append(vertice2)
+        self.grafo[vertice1][vertice2] = peso
         if not direcionado:
-            self.grafo[vertice2].append(vertice1)
+            self.grafo[vertice2][vertice1] = peso
 
     def remover_aresta_por_vertices(self, vertice1, vertice2):
-        if vertice1 in self.grafo and vertice2 in self.grafo:
-            if vertice2 in self.grafo[vertice1]:
-                self.grafo[vertice1].remove(vertice2)
-            if vertice1 in self.grafo[vertice2]:
-                self.grafo[vertice2].remove(vertice1)
+        if vertice1 < self.num_vertices and vertice2 < self.num_vertices:
+            self.grafo[vertice1][vertice2] = 0
+            self.grafo[vertice2][vertice1] = 0
         else:
             print("Um dos vértices não existe.")
 
     def ponderar_e_rotular_vertices(self):
-        for vertice in self.grafo:
+        for vertice in range(self.num_vertices):
             rotulo = input(f"Insira o rótulo para o vértice {vertice}: ")
             peso = float(input(f"Insira o peso para o vértice {vertice}: "))
             self.rotulos_vertices[vertice] = rotulo
@@ -42,69 +36,70 @@ class Grafo:
 
     # Métodos de consulta e exibição
     def exibir_com_rotulos_e_pesos(self):
-        for vertice, adjacentes in self.grafo.items():
+        for vertice in range(self.num_vertices):
             adj_formatado = []
-            for adjacente in adjacentes:
-                adj_formatado.append(f"({adjacente}) [Peso: {self.vertices_ponderados.get(adjacente, 0)}]")
+            for adjacente in range(self.num_vertices):
+                if self.grafo[vertice][adjacente] != 0:
+                    adj_formatado.append(f"({adjacente}) [Peso: {self.grafo[vertice][adjacente]}]")
             print(f"{vertice} -> {adj_formatado}")
 
     def contar_arestas(self):
-        count = sum(len(adjacentes) for adjacentes in self.grafo.values())
+        count = sum(sum(1 for x in linha if x != 0) for linha in self.grafo)
         return count if self.direcionado else count // 2
 
     def checar_vazio(self):
-        for adjacentes in self.grafo.values():
-            if adjacentes:
+        for linha in self.grafo:
+            if any(linha):
                 return False
         return True
 
     def checar_completo(self):
-        for v1 in self.grafo:
-            for v2 in self.grafo:
-                if v1 != v2:
+        for i in range(self.num_vertices):
+            for j in range(self.num_vertices):
+                if i != j:
                     if self.direcionado:
-                        if v2 not in self.grafo[v1]:
+                        if self.grafo[i][j] == 0:
                             return False
                     else:
-                        if v2 not in self.grafo[v1] and v1 not in self.grafo[v2]:
+                        if self.grafo[i][j] == 0 and self.grafo[j][i] == 0:
                             return False
         return True
 
     def checar_conectividade(self):
         def dfs(v, visitados):
             visitados.add(v)
-            for vizinho in self.grafo[v]:
-                if vizinho not in visitados:
-                    dfs(vizinho, visitados)
+            for i in range(self.num_vertices):
+                if self.grafo[v][i] != 0 and i not in visitados:
+                    dfs(i, visitados)
 
         visitados = set()
-        dfs(1, visitados)
-        if len(visitados) == self.num_vertices:
-            return "conexo"
-        return "não conexo"
+        dfs(0, visitados)  # Começa o DFS a partir do vértice 0
+        return "conexo" if len(visitados) == self.num_vertices else "não conexo"
 
     # Funções relacionadas a pontes e articulações
     def duplicar_grafo(self):
         grafo_duplicado = Grafo(self.num_vertices, self.direcionado)
-        for v1 in self.grafo:
-            for v2 in self.grafo[v1]:
-                grafo_duplicado.adicionar_aresta(v1, v2, self.direcionado)
+        for i in range(self.num_vertices):
+            for j in range(self.num_vertices):
+                if self.grafo[i][j] != 0:
+                    grafo_duplicado.adicionar_aresta(i, j, self.grafo[i][j], self.direcionado)
         return grafo_duplicado
 
     def remover_vertice_e_arestas(self, vertice):
         """Remove o vértice e todas as arestas que o conectam."""
-        if vertice in self.grafo:
-            del self.grafo[vertice]
-            for v in self.grafo:
-                if vertice in self.grafo[v]:
-                    self.grafo[v].remove(vertice)
+        if vertice < self.num_vertices:
+            for i in range(self.num_vertices):
+                self.grafo[vertice][i] = 0
+                self.grafo[i][vertice] = 0
+        else:
+            print("Vértice não encontrado.")
 
     def kosaraju(self):
         def dfs(v, visitados, stack=None):
             visitados[v] = True
-            for adjacente in self.grafo[v]:
-                if not visitados[adjacente]:
-                    dfs(adjacente, visitados, stack)
+            for i in range(self.num_vertices):
+                if self.grafo[v][i] != 0 and not visitados[i]:
+                    dfs(i, visitados, stack)
             if stack is not None:
                 stack.append(v)
 
@@ -116,11 +111,12 @@ class Grafo:
                 dfs(vertice, visitados, stack)
 
         grafo_transposto = self.duplicar_grafo()
-        grafo_transposto.grafo = {v: [] for v in grafo_transposto.grafo}
+        grafo_transposto.grafo = [[0] * self.num_vertices for _ in range(self.num_vertices)]
 
-        for v1 in self.grafo:
-            for v2 in self.grafo[v1]:
-                grafo_transposto.adicionar_aresta(v2, v1, self.direcionado)
+        for i in range(self.num_vertices):
+            for j in range(self.num_vertices):
+                if self.grafo[i][j] != 0:
+                    grafo_transposto.adicionar_aresta(j, i, self.grafo[i][j], self.direcionado)
 
         visitados = [False] * self.num_vertices
         sccs = []
@@ -137,10 +133,10 @@ class Grafo:
     # Função para verificar se existem múltiplos componentes conexos
     def checar_pontes_por_rotulo(self, rotulo):
         grafo_duplicado = self.duplicar_grafo()
-        grafo_duplicado.remover_aresta_por_rotulo(rotulo)
+        grafo_duplicado.remover_aresta_por_rotulos(rotulo)
 
         # Verifica se o grafo duplicado ainda é conexo
-        if not grafo_duplicado.verificar_conectividade():
+        if grafo_duplicado.checar_conectividade() == "não conexo":
             print(f"A aresta com rótulo '{rotulo}' é uma ponte.")
         else:
             print(f"A aresta com rótulo '{rotulo}' não é uma ponte.")
@@ -150,7 +146,7 @@ class Grafo:
         grafo_duplicado.remover_aresta_por_vertices(vertice1, vertice2)
 
         # Verifica se o grafo duplicado ainda é conexo
-        if not grafo_duplicado.verificar_conectividade():
+        if grafo_duplicado.checar_conectividade() == "não conexo":
             print(f"A aresta entre {vertice1} e {vertice2} é uma ponte.")
         else:
             print(f"A aresta entre {vertice1} e {vertice2} não é uma ponte.")
@@ -160,7 +156,7 @@ class Grafo:
         grafo_duplicado.remover_vertice_e_arestas(vertice)
 
         # Verifica se o grafo duplicado ainda é conexo
-        if not grafo_duplicado.verificar_conectividade():
+        if grafo_duplicado.checar_conectividade() == "não conexo":
             print(f"O vértice {vertice} é uma articulação.")
         else:
             print(f"O vértice {vertice} não é uma articulação.")
