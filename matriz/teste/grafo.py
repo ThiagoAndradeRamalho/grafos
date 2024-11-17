@@ -104,8 +104,6 @@ class Grafo:
             print(f"Erro: vértice(s) {origem} ou {destino} não encontrado(s).")
 
     def remover_aresta(self, origem, destino):
-        # Cria um conjunto de arestas para otimizar a verificação de existência
-        aresta = (origem, destino)
 
         if not self.aresta_existe(origem, destino):
             print(f"A aresta ({origem}, {destino}) não existe no grafo.")
@@ -116,6 +114,25 @@ class Grafo:
 
         self._lista_adjacentes[origem].remove(destino)
         print(f"A aresta ({origem}, {destino}) foi removida com sucesso.")
+
+    def remover_vertice(self, v):
+        if v not in self._lista_vertices:
+            print('Vertice {v} nao existe')
+
+        for a in self._lista_arestas:
+            if a.origem == v or a.destino == v:
+                self.remover_aresta(a.origem, a.destino)
+
+        for vertice in self._lista_vertices:
+            if vertice.rotulo == v:
+                self._lista_vertices.remove(vertice)
+                break
+        
+        del self._lista_adjacentes[v]
+
+        self.imprimir_lista_adjacentes()
+
+        print('Vertice ', v ,' removido com sucesso')
 
     def set_lista_adjacentes(self):
         for i in self._lista_vertices:
@@ -482,6 +499,16 @@ class Grafo:
         print(nNewComponentes)
 
         return nNewComponentes != nComponentes
+    
+    def articulacao(self, v):
+        if not self.vertice_existe(v):
+            print("Vertice {v} não existe")
+
+        g = self.copiar_grafo()
+
+        g.remover_vertice(v)
+
+        return g.num_componentes() != self.num_componentes()
 
 
 
@@ -555,3 +582,6 @@ print('Nuemro componentes?',p)
 
 p = str(grafo.ponte('v1', 'v2'))
 print('A aresta é ponte?',p)
+
+p = str(grafo.articulacao('v2'))
+print('O vertice é articulação?',p)
