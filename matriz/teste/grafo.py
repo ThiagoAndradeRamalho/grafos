@@ -13,6 +13,7 @@ class Grafo:
         self._vazio = True
         self._completo = False
         self._numComponentesConexos = 0
+        self.num_Componentes = 0
 
     @property
     def vertices(self):
@@ -28,10 +29,7 @@ class Grafo:
     
     @property
     def vazio(self):
-        if len(arestas) == 0:
-            self._vazio == True
-        else:
-            self._vazio = False
+        self._vazio = len(self._lista_arestas) == 0
         return self._vazio
     
     @property
@@ -66,6 +64,14 @@ class Grafo:
         for i in range(len(self._matriz_incidencia)):
             print(self._matriz_incidencia[i])
 
+    def imprimir_vertices(self):
+        for v in self._lista_vertices:
+            print(v.rotulo)
+
+    def imprimir_arestas(self):
+        for a in self._lista_arestas:
+            print("Origem " + a.origem + " Destino " + a.destino)
+
     def num_vertices(self):
         return len(self._lista_vertices)
 
@@ -75,8 +81,18 @@ class Grafo:
     def adjacentes(self, vertice):
         return [str(i) for i in self._lista_adjacentes[vertice]]
     
-    def add_vertice(self, vertices):
-        self._lista_vertices = [Vertice(rotulo) for rotulo in vertices]
+    def add_vertice(self, vertice):
+        # Se o 'vertice' for um objeto da classe 'Vertice', adiciona ele
+        if isinstance(vertice, Vertice):
+            self._lista_vertices.append(vertice)
+            self._lista_adjacentes[vertice.rotulo] = []
+        # Se o 'vertice' for um rótulo (string), cria um objeto 'Vertice' e adiciona
+        elif isinstance(vertice, str):
+            novo_vertice = Vertice(vertice)
+            self._lista_vertices.append(novo_vertice)
+            self._lista_adjacentes[novo_vertice.rotulo] = []
+        else:
+            print("Erro: O parâmetro vertice deve ser um objeto Vertice ou uma string.")
 
     def add_aresta(self, origem, destino, peso):
         # Verifica se ambos os vértices estão presentes no grafo antes de adicionar a aresta
@@ -97,6 +113,8 @@ class Grafo:
 
         # Remove a aresta diretamente, criando uma nova lista sem a aresta a ser removida
         self._lista_arestas = [a for a in self._lista_arestas if not (a.origem == origem and a.destino == destino)]
+
+        self._lista_adjacentes[origem].remove(destino)
         print(f"A aresta ({origem}, {destino}) foi removida com sucesso.")
 
     def set_lista_adjacentes(self):
@@ -134,7 +152,15 @@ class Grafo:
     
     def aresta_existe(self, o, d):
         for aresta in self._lista_arestas:
-            return aresta.origem == o and aresta.destino == d
+            if aresta.origem == o and aresta.destino == d:
+                return True
+        return False
+    
+    def vertice_existe(self, v):
+        for vertice in self._lista_vertices:
+            if v == vertice.rotulo:
+                return vertice
+        return False
     
     def set_matriz_incidencia(self):
         nV = self.num_vertices()
@@ -227,24 +253,76 @@ class Grafo:
     #     for v in self._lista_vertices:
     #         print(f"Vértice {v.rotulo}: descoberta={v._tempo_descoberta}, término={v._tempo_termino}, pai={v._pai}")
 
-    def busca_profundidade(self, vInicial):
-        if vInicial not in [v.rotulo for v in self._lista_vertices]:
-            print(f"O vértice {vInicial} não existe no grafo.")
-            return
+    # def busca_profundidade(self, vInicial):
+    #     if vInicial not in [v.rotulo for v in self._lista_vertices]:
+    #         print(f"O vértice {vInicial} não existe no grafo.")
+    #         return
         
+    #     mapa_vertices = {v.rotulo: v for v in self._lista_vertices}
+    #     vertices_visitados = set()  # Agora o conjunto de visitados está dentro da função
+
+    #     def dfs_recursivo(v):
+    #         vertices_visitados.add(v.rotulo)  # Marca o vértice como visitado
+    #         for vizinho in self._lista_adjacentes[v.rotulo]:
+    #             if vizinho not in vertices_visitados:
+    #                 dfs_recursivo(mapa_vertices[vizinho])
+
+    #     # Inicia a DFS recursiva a partir do vértice inicial
+    #     dfs_recursivo(mapa_vertices[vInicial])
+
+    #     return vertices_visitados  # Retorna os vértices visitados
+
+    def busca_profundidade(self, vInicial):
+        # Cria o dicionário de vértices com o rótulo como chave
         mapa_vertices = {v.rotulo: v for v in self._lista_vertices}
-        vertices_visitados = set()  # Agora o conjunto de visitados está dentro da função
+        
+        # Verifica se o vértice inicial está no mapa de vértices
+        if vInicial not in mapa_vertices:
+            print(f"Erro: {vInicial} não está em mapa_vertices.")
+            print(f"Rótulos de vértices disponíveis: {list(mapa_vertices.keys())}")
+            return False
 
-        def dfs_recursivo(v):
-            vertices_visitados.add(v.rotulo)  # Marca o vértice como visitado
-            for vizinho in self._lista_adjacentes[v.rotulo]:
-                if vizinho not in vertices_visitados:
-                    dfs_recursivo(mapa_vertices[vizinho])
+        t = 0
+        # n = 0
+        ordem_visitados = []
 
-        # Inicia a DFS recursiva a partir do vértice inicial
-        dfs_recursivo(mapa_vertices[vInicial])
+        # Inicializa os vértices antes da busca
+        for vertice in self._lista_vertices:
+            vertice._visitado = False
+            vertice._pai = None
+            vertice._tempo_descoberta = 0
+            vertice._tempo_termino = 0
 
-        return vertices_visitados  # Retorna os vértices visitados
+        # Função recursiva para DFS
+        def dfs(vertice):
+            nonlocal t
+            # nonlocal n
+            # if vertice._pai == None:
+            #     n += 1
+            
+            t += 1
+            vertice._visitado = True
+            vertice._tempo_descoberta = t
+            ordem_visitados.append(vertice.rotulo)
+
+            # Processa os vizinhos do vértice
+            for vizinho in self._lista_adjacentes[vertice.rotulo]:
+                if not mapa_vertices[vizinho]._visitado:
+                    mapa_vertices[vizinho]._pai = vertice
+                    dfs(mapa_vertices[vizinho])
+
+            t += 1
+            vertice._tempo_termino = t
+
+        # Começa a busca a partir do vértice inicial
+        vertice_inicial = mapa_vertices[vInicial]
+        dfs(vertice_inicial)
+
+        # self.num_Componentes = n
+        # print("Numero c: "+ self.num_Componentes)
+        return ordem_visitados
+
+
 
 
 
@@ -358,41 +436,46 @@ class Grafo:
             self.grafo_subjacente()
 
     def num_componentes(self):
+        self.num_Componentes = 0
 
-        vertices_visitados = set()  # Conjunto para armazenar vértices visitados
-        n = 0  # Contador de componentes
+        for vertice in self._lista_vertices:
+            if not vertice._visitado:
+                self.busca_profundidade(vertice.rotulo)
+                self.num_Componentes += 1  
 
-        for v in self._lista_vertices:
-            if v.rotulo not in vertices_visitados:
-                # Chama a busca em profundidade e pega os vértices visitados
-                visitados = self.busca_profundidade(v.rotulo)
-                vertices_visitados.update(visitados)  # Marca todos os vértices como visitados
-                n += 1  # Incrementa o contador de componentes
-
-        return n
+        return self.num_Componentes
     
     def copiar_grafo(self):
-        novo_grafo = Grafo(self._direcionado)
+        grafo_copiado = Grafo(self.direcionado)
 
-        for v in self._lista_vertices:
-            novo_grafo.add_vertice(v.rotulo)
-        
+        # Copiar os vértices
+        for vertice in self._lista_vertices:
+            grafo_copiado.add_vertice(vertice)
+            
+
+        print("n ",grafo_copiado.imprimir_vertices())
+
+        # Copiar as arestas
         for aresta in self._lista_arestas:
-            novo_grafo.add_aresta(aresta.origem, aresta.destino, aresta.peso)
-        
-        return novo_grafo
+            grafo_copiado.add_aresta(aresta.origem, aresta.destino, aresta.peso)
+
+
+        return grafo_copiado
     
     def ponte(self, origem, destino):
 
-        ar = (origem, destino)
+        if not self.aresta_existe(origem, destino):
+            print('Aresta não existe')
 
         nComponentes = self.num_componentes()
-
-        print(nComponentes)
 
         g = self.copiar_grafo()
 
         g.remover_aresta(origem, destino)
+
+        g.imprimir_arestas()
+        
+        g.imprimir_lista_adjacentes()
 
         nNewComponentes = g.num_componentes()
 
@@ -411,7 +494,10 @@ class Grafo:
 grafo = Grafo(direcionado=True)  # Se for direcionado, altere para True
 
 # Adicionar Vértices
-grafo.add_vertice(['v1', 'v2', 'v3', 'v4', 'v5'])
+vertices = ['v1', 'v2', 'v3', 'v4', 'v5']
+
+for v in vertices:
+ grafo.add_vertice(v)
 
 grafo.set_lista_adjacentes()
 
@@ -452,7 +538,8 @@ print('BFS')
 grafo.busca_largura('v1')
 
 print('DFS')
-grafo.busca_profundidade('v1')
+p = grafo.busca_profundidade('v1')
+print(p)
 
 componentes_fortemente_conexos = grafo.kosaraju()
 print("Componentes Fortemente Conexos:", componentes_fortemente_conexos)
