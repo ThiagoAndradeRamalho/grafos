@@ -203,23 +203,25 @@ def busca_profundidade(grafo):
 
     return componentes
 
-def _dfs(grafo, u, TD, TT, pai, t, ordem_visitados):
+def _dfs(grafo, u, TD, TT, pai, t, ordem_visitados, destino=None, encontrado=None):
     t += 1
-    TD[u] = t  
-   
+    TD[u] = t
     ordem_visitados.append(u)
 
-    
+    # Verifica se alcançamos o destino
+    if destino is not None and u == destino:
+        if encontrado is not None:
+            encontrado[0] = True  # Marca que encontramos o destino
+        return t
+
+    # Continua a busca
     for v in vizinhos(grafo, u):
-        if TD[v] == 0:  
-          
-            pai[v] = u  
-            t = _dfs(grafo, v, TD, TT, pai, t, ordem_visitados)  
+        if TD[v] == 0:  # Vértice não visitado
+            pai[v] = u
+            t = _dfs(grafo, v, TD, TT, pai, t, ordem_visitados, destino, encontrado)
 
     t += 1
-    TT[u] = t  
-    
-    
+    TT[u] = t
     return t
 
 def vizinhos(grafo, u):
@@ -232,22 +234,6 @@ def vizinhos(grafo, u):
     else:
         print("Tipo de grafo desconhecido.")
         return []
-    
-def verifica_conectividade(grafo):
-    grafo_subjacente = subgrafo_subjacente(grafo)
-    componentes = busca_profundidade(grafo_subjacente)
-    if componentes > 1:
-        print("O grafo não é simplesmente conexo (S-Conexo).")
-        return "Desconexo"
-
-    print("O grafo é simplesmente conexo (S-Conexo).")
-
-    if verifica_sf_conexo(grafo):
-        print("O grafo é semifortemente conexo (SF-Conexo).")
-        return "SF-Conexo"
-    else:
-        print("O grafo não é semifortemente conexo (SF-Conexo).")
-        return "S-Conexo"
 
 def subgrafo_subjacente(grafo):
     if isinstance(grafo, GrafoListaAdjacencia):
@@ -279,57 +265,50 @@ def subgrafo_subjacente(grafo):
     else:
         raise ValueError("Representação de grafo desconhecida.")
 
-def verifica_sf_conexo(grafo):
-    """Verifica se o grafo é semifortemente conexo (SF-Conexo)."""
-    num_vertices = grafo.num_vertices
-    
-    # Executa DFS no grafo original a partir do vértice 0
-    TD_original = [0] * num_vertices
-    TT_original = [0] * num_vertices
-    pai_original = [None] * num_vertices
-    _dfs(grafo, 0, TD_original, TT_original, pai_original, 0, [])
+def verifica_conectividade(grafo):
+    #verifica se o grafo é simplesmente conexo
+    grafo_subjacente = subgrafo_subjacente(grafo)
+    componentes = busca_profundidade(grafo_subjacente)
 
-    # Verifica se todos os vértices foram visitados a partir do vértice 0
-    if any(t == 0 for t in TD_original):
-        return False  # Nem todos os vértices foram visitados no grafo original
-
-    # Executa DFS no grafo transposto a partir do vértice 0
-    grafo_transposto = transpoe_grafo(grafo)
-    TD_transposto = [0] * num_vertices
-    TT_transposto = [0] * num_vertices
-    pai_transposto = [None] * num_vertices
-    _dfs(grafo_transposto, 0, TD_transposto, TT_transposto, pai_transposto, 0, [])
-
-    # Verifica se todos os vértices podem alcançar o vértice 0 no grafo transposto
-    if any(t == 0 for t in TD_transposto):
-        return False  # Nem todos os vértices podem alcançar o vértice 0 no grafo transposto
-
-    return True
-
-def transpoe_grafo(grafo):
-    """Cria o grafo transposto (inverte as arestas)."""
-    if isinstance(grafo, GrafoListaAdjacencia):
-        grafo_transposto = GrafoListaAdjacencia(grafo.num_vertices)
-        for u in range(grafo.num_vertices):
-            for v in grafo.lista[u]:
-                grafo_transposto.adicionar_aresta(v, u)
-        return grafo_transposto
-
-    elif isinstance(grafo, GrafoMatrizAdjacencia):
-        grafo_transposto = GrafoMatrizAdjacencia(grafo.num_vertices)
-        for u in range(grafo.num_vertices):
-            for v in range(grafo.num_vertices):
-                if grafo.matriz[u][v] != 0:
-                    grafo_transposto.adicionar_aresta(v, u)
-        return grafo_transposto
-
-    elif isinstance(grafo, GrafoMatrizIncidencia):
-        grafo_transposto = GrafoMatrizIncidencia(grafo.num_vertices, grafo.num_arestas)
-        for e in range(grafo.num_arestas):
-            u, v = grafo.obter_extremidades(e)
-            if u is not None and v is not None:
-                grafo_transposto.adicionar_aresta(v, u, e, direcionado=True)
-        return grafo_transposto
-
+    if componentes == 1:
+        print("O grafo é simplesmente conexo (S-Conexo).")
     else:
-        raise ValueError("Representação de grafo desconhecida.")
+        print(f"O grafo não é simplesmente conexo. Ele possui {componentes} componentes.")
+
+    #verifica se o grafo é semifortemente conexo
+    num_vertices = grafo.num_vertices
+
+    #verifica para cada par de vértices (u, v)
+    for u in range(num_vertices):
+        for v in range(num_vertices):
+            if u != v:
+                # Confere se pelo menos um alcança o outro
+                if not (isAlcancavel(grafo, u, v) or isAlcancavel(grafo, v, u)):
+                    print(f"O grafo não é semifortemente conexo. Problema nos vértices ({u}, {v}).")
+                    return "S-Conexo"
+
+    print("O grafo é semifortemente conexo (SF-Conexo).")
+    for u in range(num_vertices):
+        for v in range(num_vertices):
+            if u != v:
+                # Verifica se há conectividade bidirecional (u → v e v → u)
+                if not (isAlcancavel(grafo, u, v) and isAlcancavel(grafo, v, u)):
+                    print(f"O grafo não é fortemente conexo. Problema nos vértices ({u}, {v}).")
+                    return "Semifortemente Conexo"
+
+    print("O grafo é fortemente conexo (F-Conexo).")
+    return "Fortemente Conexo"
+
+
+def isAlcancavel(grafo, origem, destino):
+    num_vertices = grafo.num_vertices
+    TD = [0] * num_vertices
+    TT = [0] * num_vertices
+    pai = [None] * num_vertices
+    ordem_visitados = []
+    encontrado = [False]  # Variável mutável para verificar se destino foi alcançado
+
+    # Executa a DFS a partir da origem
+    _dfs(grafo, origem, TD, TT, pai, 0, ordem_visitados, destino, encontrado)
+    
+    return encontrado[0]
