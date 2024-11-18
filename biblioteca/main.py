@@ -29,7 +29,8 @@ def menu():
     print("22 - Exibir vértices")
     print("23 - Exibir arestas")
     print("24 - Buscar em Profundidade (DFS)")
-    print("25 - Sair")
+    print("25 - Checar se é simplesmente conexo")
+    print("26 - Sair")
 
 def main():
     print("Escolha o tipo de representação do grafo:")
@@ -200,6 +201,9 @@ def main():
             busca_profundidade(grafo)
 
         elif opcao == '25':  
+            conexo = simplesmente_conexo(grafo)
+            print("O grafo é simplesmente conexo." if conexo else "O grafo não é  conexo.")
+        elif opcao == '26':  
             print("Encerrando o programa.")
             break
 

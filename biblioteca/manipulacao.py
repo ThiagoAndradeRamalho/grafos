@@ -177,46 +177,53 @@ def exibir_arestas(grafo):
                 print(f"Aresta entre {u} e {v} (Rótulo: {rotulo}, Peso: {peso})")
 
 def busca_profundidade(grafo):
-    TD = [0] * quantidade_vertices(grafo)
-    TT = [0] * quantidade_vertices(grafo)
-    pai = [None] * quantidade_vertices(grafo)
-    ordem_visitados = []
-    t = 0
+    num_vertices = quantidade_vertices(grafo)
+    TD = [0] * num_vertices  
+    TT = [0] * num_vertices  
+    pai = [None] * num_vertices 
+    t = 0  
+    ordem_visitados = []  
 
-    for v in range(quantidade_vertices(grafo)):
-        if TD[v] == 0:
-            t = _dfs(grafo, v, TD, TT, pai, t, ordem_visitados)
+   
+    t = _dfs(grafo, 0, TD, TT, pai, t, ordem_visitados)
+    
+    
+    if all(t > 0 for t in TD):
+        print("O grafo é conexo.")
+    else:
+        print("O grafo não é conexo.")
 
     print("Tempo de Descoberta: ", TD)
     print("Tempo de Término: ", TT)
     print("Predecessores: ", pai)
     print("Ordem de visitação dos vértices:", ordem_visitados)
 
-def _dfs(grafo, v, TD, TT, pai, t, ordem_visitados):
+def _dfs(grafo, u, TD, TT, pai, t, ordem_visitados):
     t += 1
-    TD[v] = t
-    print(f"Visitando vértice {v}, TD[{v}] = {TD[v]}")
-    ordem_visitados.append(v)
-    for u in vizinhos(grafo, v):
-        if TD[u] == 0:
-            print(f"Aresta de árvore: ({v}, {u})")  
-            pai[u] = v
-            t = _dfs(grafo, u, TD, TT, pai, t, ordem_visitados ) 
-        elif TT[u] == 0 and u != pai[v]:
-            print(f"Aresta de retorno: ({v}, {u})") 
+    TD[u] = t  
+    print(f"Visitando vértice {u}, TD[{u}] = {TD[u]}")
+    ordem_visitados.append(u)
+
+    
+    for v in vizinhos(grafo, u):
+        if TD[v] == 0:  
+            print(f"Aresta de árvore: ({u}, {v})")
+            pai[v] = u  
+            t = _dfs(grafo, v, TD, TT, pai, t, ordem_visitados)  
 
     t += 1
-    TT[v] = t
-    print(f"Término do vértice {v}, TT[{v}] = {TT[v]}")
+    TT[u] = t  
+    print(f"Término do vértice {u}, TT[{u}] = {TT[u]}")
+    
     return t
 
-def vizinhos(grafo, v):
+def vizinhos(grafo, u):
     if isinstance(grafo, GrafoListaAdjacencia):
-        return grafo.lista[v]
+        return grafo.lista[u]
     elif isinstance(grafo, GrafoMatrizAdjacencia):
-        return [u for u in range(grafo.num_vertices) if grafo.matriz[v][u] != 0]
+        return [v for v in range(grafo.num_vertices) if grafo.matriz[u][v] != 0]
     elif isinstance(grafo, GrafoMatrizIncidencia):
-        return [u for u in range(grafo.num_vertices) if any(grafo.matriz[u][e] != 0 for e in range(grafo.num_arestas))]
+        return [v for v in range(grafo.num_vertices) if any(grafo.matriz[u][e] != 0 for e in range(grafo.num_arestas))]
     else:
         print("Tipo de grafo desconhecido.")
         return []
