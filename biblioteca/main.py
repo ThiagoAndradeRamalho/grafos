@@ -29,8 +29,7 @@ def menu():
     print("22 - Exibir vértices")
     print("23 - Exibir arestas")
     print("24 - Buscar em Profundidade (DFS)")
-    print("25 - Checar se é simplesmente conexo")
-    print("26 - Sair")
+    print("25 - Sair")
 
 def main():
     print("Escolha o tipo de representação do grafo:")
@@ -50,8 +49,9 @@ def main():
         grafo = GrafoMatrizIncidencia(num_vertices, num_arestas)
         tipo_grafo = "incidência direcionada" if direcionado else "incidência não direcionada"
     elif tipo == '3':
-        grafo = GrafoListaAdjacencia(num_vertices)
-        tipo_grafo = "lista de adjacência"
+        direcionado = input("O grafo é direcionado? (s/n): ").strip().lower() == 's'
+        grafo = GrafoListaAdjacencia(num_vertices, direcionado)
+        tipo_grafo = "lista de adjacência direcionada" if direcionado else "lista de adjacência não direcionada"
     else:
         print("Opção inválida! Encerrando o programa.")
         return
@@ -159,7 +159,7 @@ def main():
             print("O grafo é completo." if grafo_completo(grafo) else "O grafo não é completo.")
         
         elif opcao == '15':  
-            conectividade = verificar_conectividade(grafo)
+            conectividade = verifica_conectividade(grafo)
             print(f"Conectividade: {conectividade}")
         
         elif opcao == '16':  
@@ -201,9 +201,6 @@ def main():
             busca_profundidade(grafo)
 
         elif opcao == '25':  
-            conexo = simplesmente_conexo(grafo)
-            print("O grafo é simplesmente conexo." if conexo else "O grafo não é  conexo.")
-        elif opcao == '26':  
             print("Encerrando o programa.")
             break
 

@@ -183,15 +183,19 @@ def busca_profundidade(grafo):
     pai = [None] * num_vertices 
     t = 0  
     ordem_visitados = []  
+    componentes = 0  # Contador de componentes conectados
 
-   
-    t = _dfs(grafo, 0, TD, TT, pai, t, ordem_visitados)
-    
-    
-    if all(t > 0 for t in TD):
+    for u in range(num_vertices):
+        if TD[u] == 0:  # Se o vértice ainda não foi visitado
+            componentes += 1  # Nova árvore DFS iniciada
+            print(f"Nova árvore DFS iniciada no vértice {u}")
+            t = _dfs(grafo, u, TD, TT, pai, t, ordem_visitados)
+
+    # Verifica a conectividade
+    if componentes == 1:
         print("O grafo é conexo.")
     else:
-        print("O grafo não é conexo.")
+        print(f"O grafo não é conexo. Ele tem {componentes} componentes conectados.")
 
     print("Tempo de Descoberta: ", TD)
     print("Tempo de Término: ", TT)
@@ -227,3 +231,102 @@ def vizinhos(grafo, u):
     else:
         print("Tipo de grafo desconhecido.")
         return []
+    
+def verifica_conectividade(grafo):
+    grafo_subjacente = transforma_em_subjacente(grafo)
+    componentes = busca_profundidade(grafo_subjacente)
+    if componentes > 1:
+        print("O grafo não é simplesmente conexo (S-Conexo).")
+        return "Desconexo"
+
+    print("O grafo é simplesmente conexo (S-Conexo).")
+
+    if verifica_sf_conexo(grafo):
+        print("O grafo é semifortemente conexo (SF-Conexo).")
+        return "SF-Conexo"
+    else:
+        print("O grafo não é semifortemente conexo (SF-Conexo).")
+        return "S-Conexo"
+
+def transforma_em_subjacente(grafo):
+    if isinstance(grafo, GrafoListaAdjacencia):
+        grafo_subjacente = GrafoListaAdjacencia(grafo.num_vertices)
+        for u in range(grafo.num_vertices):
+            for v in grafo.lista[u]:
+                grafo_subjacente.adicionar_aresta(u, v)
+                grafo_subjacente.adicionar_aresta(v, u)
+        return grafo_subjacente
+
+    elif isinstance(grafo, GrafoMatrizAdjacencia):
+        grafo_subjacente = GrafoMatrizAdjacencia(grafo.num_vertices)
+        for u in range(grafo.num_vertices):
+            for v in range(grafo.num_vertices):
+                if grafo.matriz[u][v] != 0:
+                    grafo_subjacente.adicionar_aresta(u, v)
+                    grafo_subjacente.adicionar_aresta(v, u)
+        return grafo_subjacente
+
+    elif isinstance(grafo, GrafoMatrizIncidencia):
+        grafo_subjacente = GrafoMatrizAdjacencia(grafo.num_vertices)
+        for e in range(grafo.num_arestas):
+            u, v = grafo.obter_extremidades(e)
+            if u is not None and v is not None:
+                grafo_subjacente.adicionar_aresta(u, v)
+                grafo_subjacente.adicionar_aresta(v, u)
+        return grafo_subjacente
+
+    else:
+        raise ValueError("Representação de grafo desconhecida.")
+
+def verifica_sf_conexo(grafo):
+    """Verifica se o grafo é semifortemente conexo."""
+    num_vertices = grafo.num_vertices
+
+    # Executa DFS no grafo original
+    TD_original = [0] * num_vertices
+    TT_original = [0] * num_vertices
+    pai_original = [None] * num_vertices
+    _dfs(grafo, 0, TD_original, TT_original, pai_original, 0, [])
+
+    if not all(TD_original):
+        return False  # Nem todos os vértices foram visitados no grafo original
+
+    # Executa DFS no grafo transposto
+    grafo_transposto = transpoe_grafo(grafo)
+    TD_transposto = [0] * num_vertices
+    TT_transposto = [0] * num_vertices
+    pai_transposto = [None] * num_vertices
+    _dfs(grafo_transposto, 0, TD_transposto, TT_transposto, pai_transposto, 0, [])
+
+    if not all(TD_transposto):
+        return False  # Nem todos os vértices foram visitados no grafo transposto
+
+    return True
+
+def transpoe_grafo(grafo):
+    """Cria o grafo transposto (inverte as arestas)."""
+    if isinstance(grafo, GrafoListaAdjacencia):
+        grafo_transposto = GrafoListaAdjacencia(grafo.num_vertices)
+        for u in range(grafo.num_vertices):
+            for v in grafo.lista[u]:
+                grafo_transposto.adicionar_aresta(v, u)
+        return grafo_transposto
+
+    elif isinstance(grafo, GrafoMatrizAdjacencia):
+        grafo_transposto = GrafoMatrizAdjacencia(grafo.num_vertices)
+        for u in range(grafo.num_vertices):
+            for v in range(grafo.num_vertices):
+                if grafo.matriz[u][v] != 0:
+                    grafo_transposto.adicionar_aresta(v, u)
+        return grafo_transposto
+
+    elif isinstance(grafo, GrafoMatrizIncidencia):
+        grafo_transposto = GrafoMatrizIncidencia(grafo.num_vertices, grafo.num_arestas)
+        for e in range(grafo.num_arestas):
+            u, v = grafo.obter_extremidades(e)
+            if u is not None and v is not None:
+                grafo_transposto.adicionar_aresta(v, u, e, direcionado=True)
+        return grafo_transposto
+
+    else:
+        raise ValueError("Representação de grafo desconhecida.")
