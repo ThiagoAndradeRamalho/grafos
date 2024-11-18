@@ -21,7 +21,7 @@ def menu():
     print("14 - Verificar se o grafo é completo")
     print("15 - Verificar conectividade (simplesmente conexo, semi-forte, forte)")
     print("16 - Detectar componentes fortemente conexos (Kosaraju)")
-    print("17 - Detectar pontes (Naive)")
+    print("17 - Detectar pontes ")
     print("18 - Detectar pontes (Tarjan)")
     print("19 - Detectar articulações")
     print("20 - Encontrar caminho euleriano (Algoritmo de Fleury)")
@@ -40,16 +40,23 @@ def main():
     num_vertices = int(input("Digite o número de vértices do grafo: "))
     
     if tipo == '1':
-        grafo = GrafoMatrizAdjacencia(num_vertices)
-        tipo_grafo = "adjacência"
+        direcionado = input("O grafo é direcionado? (s/n): ").strip().lower() == 's'
+        grafo = GrafoMatrizAdjacencia(num_vertices, direcionado=direcionado)
+        tipo_grafo = "adjacência direcionada" if direcionado else "adjacência não direcionada"
+        
+        
     elif tipo == '2':
         num_arestas = int(input("Digite o número de arestas do grafo: "))
         direcionado = input("O grafo é direcionado? (s/n): ").strip().lower() == 's'
-        grafo = GrafoMatrizIncidencia(num_vertices, num_arestas)
+        grafo = GrafoMatrizIncidencia(num_vertices, num_arestas, direcionado=direcionado)
         tipo_grafo = "incidência direcionada" if direcionado else "incidência não direcionada"
+        
+        
     elif tipo == '3':
-        grafo = GrafoListaAdjacencia(num_vertices)
-        tipo_grafo = "lista de adjacência"
+        direcionado = input("O grafo é direcionado? (s/n): ").strip().lower() == 's'
+        grafo = GrafoListaAdjacencia(num_vertices, direcionado=direcionado)
+        tipo_grafo = "lista de adjacência direcionada" if direcionado else "lista de adjacência não direcionada"
+
     else:
         print("Opção inválida! Encerrando o programa.")
         return
@@ -59,18 +66,27 @@ def main():
         opcao = input("Escolha uma opção: ").strip()
 
         if opcao == '1':  
-            u = int(input("Digite o vértice de origem: "))
-            v = int(input("Digite o vértice de destino: "))
-            if tipo == '1':
-                grafo.adicionar_aresta(u, v)
-                print(f"Aresta entre {u} e {v} adicionada.")
-            elif tipo == '2':
-                e = int(input("Digite o índice da aresta: "))
-                grafo.adicionar_aresta(u, v, e, direcionado)
-                print(f"Aresta entre {u} e {v} na posição {e} adicionada.")
-            elif tipo == '3':
-                grafo.adicionar_aresta(u, v)
-                print(f"Aresta entre {u} e {v} adicionada na lista de adjacência.")
+            print("Adicione as arestas no formato 'origem destino'. Digite 'FIM' para encerrar.")
+            while True:
+                entrada = input("Digite a aresta (ou 'FIM' para encerrar): ").strip().lower()
+                if entrada.upper() == 'FIM':
+                    break
+                
+                try:
+                    u, v = map(int, entrada.split())
+                    if tipo == '1':
+                        grafo.adicionar_aresta(u, v)
+                        print(f"Aresta entre {u} e {v} adicionada.")
+                    elif tipo == '2':
+                        e = int(input("Digite o índice da aresta: ").strip())
+                        grafo.adicionar_aresta(u, v, e)
+                        print(f"Aresta entre {u} e {v} na posição {e} adicionada.")
+                    elif tipo == '3':
+                        grafo.adicionar_aresta(u, v)
+                        print(f"Aresta entre {u} e {v} adicionada na lista de adjacência.")
+                except ValueError:
+                    print("Entrada inválida! Certifique-se de usar o formato 'origem destino' para a aresta.")
+
 
         elif opcao == '2':  
             if tipo == '1':
@@ -157,27 +173,45 @@ def main():
             print("O grafo é completo." if grafo_completo(grafo) else "O grafo não é completo.")
         
         elif opcao == '15':  
-            conectividade = verificar_conectividade(grafo)
-            print(f"Conectividade: {conectividade}")
+            # conectividade = verificar_conectividade(grafo)
+            # print(f"Conectividade: {conectividade}")
+            pass
         
-        elif opcao == '16':  
-            componentes = grafo.detectar_componentes_fortemente_conexos()
-            print(f"Componentes fortemente conexos: {componentes}")
+        elif opcao == '16':
+            componentes = kosaraju(grafo)
+            if componentes is not None:
+                print("Componentes Fortemente Conexas:")
+                for i, componente in enumerate(componentes, start=1):
+                    print(f"Componente {i}: {componente}")
+            else:
+                print("O algoritmo Kosaraju não pode ser executado para este tipo de grafo.")
+
         
-        elif opcao == '17':  
-            print("Detectando pontes usando o método naive...")
-            pontes = grafo.detectar_pontes_naive()
-            print(f"Pontes encontradas: {pontes}")
+        elif opcao == '17':
+            # Solicitar ao usuário para fornecer os vértices u e v
+            u = int(input("Digite o vértice u: "))
+            v = int(input("Digite o vértice v: "))
+
+            # Verificar se a aresta (u, v) é uma ponte
+            if checar_ponte(grafo, u, v):
+                print(f"A aresta entre os vértices {u} e {v} é uma ponte!")
+            else:
+                print(f"A aresta entre os vértices {u} e {v} não é uma ponte.")
         
         elif opcao == '18':  
             print("Detectando pontes usando o método de Tarjan...")
-            pontes = grafo.detectar_pontes_tarjan()
+            pontes = tarjan(grafo)
             print(f"Pontes encontradas: {pontes}")
         
-        elif opcao == '19':  
+        elif opcao == '19':
+            v = int(input("Digite o vértice v: "))
             print("Detectando articulações...")
-            articulacoes = grafo.detectar_articulacoes()
-            print(f"Articulações encontradas: {articulacoes}")
+            if checar_articulacao(grafo, v):
+                print(f"O vértice {v} é uma articulação!")
+            else:
+                print(f"O vértice {v} não é uma articulação.")
+
+
         
         elif opcao == '20':  
             print("Encontrando caminho euleriano (Algoritmo de Fleury)...")

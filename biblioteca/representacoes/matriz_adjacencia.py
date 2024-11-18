@@ -11,19 +11,25 @@
 
 
 class GrafoMatrizAdjacencia:
-    def __init__(self, num_vertices):
+    def __init__(self, num_vertices, direcionado=False):
         self.num_vertices = num_vertices #inicializa o atributo num_vertices com o valor passado como argumento, armazena o num de verices no grafo 
         self.matriz = [[0] * num_vertices for _ in range(num_vertices)] # cria uma matriz bidimensional (lista de listas) de tamanho num_vertices x num_vertices, onde cada elemento é inicializado com ovalor 0, usada p representar as arestas do grafo
+        self.direcionado = direcionado
         
         
-    def adicionar_aresta(self, u, v):        
-        self.matriz[v][u] = 1
+        
+    def adicionar_aresta(self, u, v):
         self.matriz[u][v] = 1
+        if not self.direcionado:
+            self.matriz[v][u] = 1
+
         
         
-    def remover_aresta(self, u, v):       
-        self.matriz[v][u] = 0
+    def remover_aresta(self, u, v):
         self.matriz[u][v] = 0
+        if not self.direcionado:
+            self.matriz[v][u] = 0
+
         
     
     # map(str, linha) aplica a função str a cada elemento de linha, convertendo-os para strings
