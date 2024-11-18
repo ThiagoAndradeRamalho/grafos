@@ -176,9 +176,47 @@ def exibir_arestas(grafo):
                 peso = pesos_arestas.get(grafo, {}).get((u, v), "sem peso")
                 print(f"Aresta entre {u} e {v} (Rótulo: {rotulo}, Peso: {peso})")
 
+def busca_profundidade(grafo):
+    TD = [0] * quantidade_vertices(grafo)
+    TT = [0] * quantidade_vertices(grafo)
+    pai = [None] * quantidade_vertices(grafo)
+    ordem_visitados = []
+    t = 0
 
-def verificar_conectividade():
-    pass
-                
-                
-        
+    for v in range(quantidade_vertices(grafo)):
+        if TD[v] == 0:
+            t = _dfs(grafo, v, TD, TT, pai, t, ordem_visitados)
+
+    print("Tempo de Descoberta: ", TD)
+    print("Tempo de Término: ", TT)
+    print("Predecessores: ", pai)
+    print("Ordem de visitação dos vértices:", ordem_visitados)
+
+def _dfs(grafo, v, TD, TT, pai, t, ordem_visitados):
+    t += 1
+    TD[v] = t
+    print(f"Visitando vértice {v}, TD[{v}] = {TD[v]}")
+    ordem_visitados.append(v)
+    for u in vizinhos(grafo, v):
+        if TD[u] == 0:
+            print(f"Aresta de árvore: ({v}, {u})")  
+            pai[u] = v
+            t = _dfs(grafo, u, TD, TT, pai, t, ordem_visitados ) 
+        elif TT[u] == 0 and u != pai[v]:
+            print(f"Aresta de retorno: ({v}, {u})") 
+
+    t += 1
+    TT[v] = t
+    print(f"Término do vértice {v}, TT[{v}] = {TT[v]}")
+    return t
+
+def vizinhos(grafo, v):
+    if isinstance(grafo, GrafoListaAdjacencia):
+        return grafo.lista[v]
+    elif isinstance(grafo, GrafoMatrizAdjacencia):
+        return [u for u in range(grafo.num_vertices) if grafo.matriz[v][u] != 0]
+    elif isinstance(grafo, GrafoMatrizIncidencia):
+        return [u for u in range(grafo.num_vertices) if any(grafo.matriz[u][e] != 0 for e in range(grafo.num_arestas))]
+    else:
+        print("Tipo de grafo desconhecido.")
+        return []

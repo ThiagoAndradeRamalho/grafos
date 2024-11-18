@@ -28,7 +28,8 @@ def menu():
     print("21 - Exportar grafo para arquivo (Gephi)")
     print("22 - Exibir vértices")
     print("23 - Exibir arestas")
-    print("24 - Sair")
+    print("24 - Buscar em Profundidade (DFS)")
+    print("25 - Sair")
 
 def main():
     print("Escolha o tipo de representação do grafo:")
@@ -195,7 +196,10 @@ def main():
         elif opcao == '23':
             exibir_arestas(grafo)
 
-        elif opcao == '24':  
+        elif opcao == '24':
+            busca_profundidade(grafo)
+
+        elif opcao == '25':  
             print("Encerrando o programa.")
             break
 
