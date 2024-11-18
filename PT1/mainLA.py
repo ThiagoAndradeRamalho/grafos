@@ -1,4 +1,4 @@
-from listaAdjacencia import Grafo
+from PT1.listaAdjacencia import Grafo
 
 def main():
     grafo = Grafo(0)
@@ -29,35 +29,6 @@ def main():
         except Exception as e:
             print(f"Erro: {e}")
 
-    # Remover arestas
-    while True:
-        resposta_remocao = input("\nDeseja remover uma aresta? (s/n): ").strip().lower()
-        if resposta_remocao == 'n':
-            break
-        if resposta_remocao == 's':
-            tipo_remocao = input("Deseja remover por (1) vértices ou (2) rótulo? (Digite 1 ou 2): ").strip()
-            if tipo_remocao == '1':
-                try:
-                    entrada = input("Digite os vértices no formato 'vertice1 vertice2': ").strip()
-                    vertice1, vertice2 = map(int, entrada.split())
-                    grafo.remover_aresta_por_vertices(vertice1, vertice2)
-                    print(f"Aresta entre {vertice1} e {vertice2} removida.")
-                except ValueError:
-                    print("Entrada inválida. Certifique-se de digitar dois números inteiros.")
-                except Exception as e:
-                    print(f"Erro: {e}")
-            elif tipo_remocao == '2':
-                try:
-                    rotulo = input("Digite o rótulo da aresta que deseja remover: ").strip()
-                    grafo.remover_aresta_por_rotulo(rotulo)
-                    print(f"Aresta com rótulo '{rotulo}' removida.")
-                except Exception as e:
-                    print(f"Erro: {e}")
-            else:
-                print("Opção inválida. Digite 1 ou 2.")
-        else:
-            print("Opção inválida. Digite 's' para sim ou 'n' para não.")
-
     print("\nLista de Adjacência Após Adicionar e/ou Remover Arestas:")
     grafo.exibir_lista_adjacencia()
 
@@ -79,7 +50,8 @@ def main():
         print("8. Checagem de quantidade de componentes fortemente conexos com Kosaraju")
         print("9. Checar se uma aresta é uma ponte por rótulo")
         print("10. Checar se uma aresta é uma ponte por vértices")
-        print("11. Sair")
+        print("11. Encontrar todas as pontes (Tarjan)")
+        print("12. Sair")
 
         escolha = input("Digite sua escolha: ").strip()
 
@@ -119,7 +91,8 @@ def main():
             conectividade = grafo.checar_conectividade()
             print(f"O grafo é {conectividade}.")
         elif escolha == "8":
-            grafo.kosaraju()  
+            componentes = grafo.kosaraju()
+            print(f"Componentes fortemente conexos encontrados: {componentes}")
         elif escolha == "9":
             rotulo = input("Digite o rótulo da aresta para verificar se é uma ponte: ").strip()
             grafo.checar_pontes_por_rotulo(rotulo)
@@ -128,6 +101,11 @@ def main():
             vertice2 = int(input("Digite o segundo vértice da aresta: "))
             grafo.checar_pontes_por_vertices(vertice1, vertice2)
         elif escolha == "11":
+            pontes = grafo.encontrar_pontes_tarjan()
+            print("Pontes encontradas:")
+            for ponte in pontes:
+                print(ponte)
+        elif escolha == "12":
             print("Encerrando o programa.")
             break
         else:
