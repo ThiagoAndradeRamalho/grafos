@@ -184,7 +184,7 @@ def main():
         
         elif opcao == '20':  
             print("Encontrando caminho euleriano (Algoritmo de Fleury)...")
-            caminho = grafo.encontrar_caminho_euleriano()
+            caminho = fleury(grafo)
             print(f"Caminho euleriano encontrado: {caminho}")
 
         elif opcao == '21':  

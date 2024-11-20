@@ -334,3 +334,32 @@ def naive(grafo):
                 subjacente.adicionar_aresta(u,v)
         
         return pontes
+
+def fleury(grafo):
+    # verificar número de vértices de grau ímpar
+    vertices_grau_impar = [u for u in range(grafo.num_vertices) if grafo.grau(u) % 2 != 0]
+    if len(vertices_grau_impar) > 2:
+        raise ValueError("O grafo não possui caminho euleriano (mais de dois vértices de grau ímpar).")
+
+    grafo_aux = grafo.duplicar_grafo()
+
+    u = vertices_grau_impar[0] if vertices_grau_impar else 0 # escolhe vértice inicial
+
+    caminho = []
+    while any(grafo_aux.lista):  # enquanto ainda houver arestas no grafo auxiliar
+        pontes = naive(grafo_aux)
+        arestas = grafo_aux.lista[u]
+
+        for v in arestas:
+            if (u, v) not in pontes and (v, u) not in pontes:  # escolher aresta não ponte, se possível
+                break
+        else:
+            # Se todas as arestas forem pontes, escolher a única disponível
+            v = arestas[0]
+
+        # Registrar aresta no caminho e removê-la do grafo
+        caminho.append((u, v))
+        grafo_aux.remover_aresta(u, v)
+        u = v  # Caminhar para o próximo vértice
+
+    return caminho
