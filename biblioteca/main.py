@@ -30,6 +30,7 @@ def menu():
     print("23 - Exibir arestas")
     print("24 - Buscar em Profundidade (DFS)")
     print("25 - Sair")
+    print("26 - subja")
 
 def main():
     print("Escolha o tipo de representação do grafo:")
@@ -168,7 +169,7 @@ def main():
         
         elif opcao == '17':  
             print("Detectando pontes usando o método naive...")
-            pontes = grafo.detectar_pontes_naive()
+            pontes = naive(grafo)
             print(f"Pontes encontradas: {pontes}")
         
         elif opcao == '18':  
@@ -202,6 +203,9 @@ def main():
 
         elif opcao == '25':  
             print("Encerrando o programa.")
+            break
+        elif opcao == '26':  
+            subgrafo_subjacente(grafo)
             break
 
         else:

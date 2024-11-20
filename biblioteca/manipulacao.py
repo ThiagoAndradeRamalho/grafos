@@ -237,11 +237,11 @@ def vizinhos(grafo, u):
 
 def subgrafo_subjacente(grafo):
     if isinstance(grafo, GrafoListaAdjacencia):
-        grafo_subjacente = GrafoListaAdjacencia(grafo.num_vertices)
-        for u in range(grafo.num_vertices):
+        grafo_subjacente = GrafoListaAdjacencia(grafo.num_vertices - 1)
+        for u in range(len(grafo.lista)):
             for v in grafo.lista[u]:
-                grafo_subjacente.adicionar_aresta(u, v)
-                grafo_subjacente.adicionar_aresta(v, u)
+                if u < v:
+                    grafo_subjacente.adicionar_aresta(u, v)
         return grafo_subjacente
 
     elif isinstance(grafo, GrafoMatrizAdjacencia):
@@ -312,3 +312,25 @@ def isAlcancavel(grafo, origem, destino):
     _dfs(grafo, origem, TD, TT, pai, 0, ordem_visitados, destino, encontrado)
     
     return encontrado[0]
+
+
+def naive(grafo):
+
+    pontes = []
+
+    if grafo.direcionado:
+        subjacente = subgrafo_subjacente(grafo)
+
+        numComponentes = busca_profundidade(subjacente)
+        
+        for u in range(grafo.num_vertices):
+            for v in grafo.lista[u]:
+                if u < v:
+                    subjacente.remover_aresta(u, v)
+                    n = busca_profundidade(subjacente)
+                    if n > numComponentes:
+                        pontes.append((u, v))
+                
+                subjacente.adicionar_aresta(u,v)
+        
+        return pontes
