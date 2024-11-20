@@ -188,7 +188,7 @@ def busca_profundidade(grafo):
     for u in range(num_vertices):
         if TD[u] == 0:  
             componentes += 1  
-            print(f"Nova árvore DFS iniciada no vértice {u}")
+            # print(f"Nova árvore DFS iniciada no vértice {u}")
             t = _dfs(grafo, u, TD, TT, pai, t, ordem_visitados)
 
     if componentes == 1:
@@ -196,10 +196,10 @@ def busca_profundidade(grafo):
     else:
         print(f"O grafo não é conexo. Ele tem {componentes} componentes conectados.")
 
-    print("Tempo de Descoberta: ", TD)
-    print("Tempo de Término: ", TT)
-    print("Predecessores: ", pai)
-    print("Ordem de visitação dos vértices:", ordem_visitados)
+    # print("Tempo de Descoberta: ", TD)
+    # print("Tempo de Término: ", TT)
+    # print("Predecessores: ", pai)
+    # print("Ordem de visitação dos vértices:", ordem_visitados)
 
     return componentes
 
@@ -315,12 +315,9 @@ def isAlcancavel(grafo, origem, destino):
 
 
 def naive(grafo):
-
     pontes = []
-
     if grafo.direcionado:
         subjacente = subgrafo_subjacente(grafo)
-
         numComponentes = busca_profundidade(subjacente)
         
         for u in range(grafo.num_vertices):
@@ -330,36 +327,54 @@ def naive(grafo):
                     n = busca_profundidade(subjacente)
                     if n > numComponentes:
                         pontes.append((u, v))
-                
-                subjacente.adicionar_aresta(u,v)
-        
+                subjacente.adicionar_aresta(u, v)  # Restaurar aresta após a remoção
         return pontes
 
 def fleury(grafo):
-    # verificar número de vértices de grau ímpar
-    vertices_grau_impar = [u for u in range(grafo.num_vertices) if grafo.grau(u) % 2 != 0]
+    # Verificar número de vértices de grau ímpar
+    vertices_grau_impar = [u for u in range(grafo.num_vertices) if grafo.grau(u)[0] % 2 != 0]
+    print(vertices_grau_impar)
     if len(vertices_grau_impar) > 2:
         raise ValueError("O grafo não possui caminho euleriano (mais de dois vértices de grau ímpar).")
 
     grafo_aux = grafo.duplicar_grafo()
-
-    u = vertices_grau_impar[0] if vertices_grau_impar else 0 # escolhe vértice inicial
+    
+    u = vertices_grau_impar[0] if vertices_grau_impar else 0  # Escolhe vértice inicial
 
     caminho = []
-    while any(grafo_aux.lista):  # enquanto ainda houver arestas no grafo auxiliar
+    while any(grafo_aux.lista):  # Enquanto ainda houver arestas no grafo auxiliar
+        # Verifique se o grafo é conexo após a remoção de cada aresta
+        num_componentes = busca_profundidade(grafo_aux)
+        if num_componentes > 1:
+            raise ValueError(f"O grafo não é conexo após a remoção de uma aresta. Isso pode indicar um problema na escolha da aresta.")
+
         pontes = naive(grafo_aux)
         arestas = grafo_aux.lista[u]
 
-        for v in arestas:
-            if (u, v) not in pontes and (v, u) not in pontes:  # escolher aresta não ponte, se possível
-                break
-        else:
-            # Se todas as arestas forem pontes, escolher a única disponível
-            v = arestas[0]
+        # Verificar se o vértice atual tem arestas disponíveis
+        if not arestas:
+            raise ValueError(f"O vértice {u} não tem mais arestas conectadas. O grafo pode estar desconexo.")
 
-        # Registrar aresta no caminho e removê-la do grafo
-        caminho.append((u, v))
-        grafo_aux.remover_aresta(u, v)
-        u = v  # Caminhar para o próximo vértice
+        # Tentar escolher uma aresta não-ponte
+        for v in arestas:
+            if (u, v) not in pontes and (v, u) not in pontes:  # Se for uma aresta não-ponte
+                grafo_aux.remover_aresta(u, v)
+                num_componentes = busca_profundidade(grafo_aux)
+                if num_componentes == 1:  # Verificar se ainda é conexo
+                    caminho.append((u, v))
+                    u = v  # Caminhar para o próximo vértice
+                    break
+                else:
+                    # Se a remoção desconectar, desfaz a remoção e tenta outra aresta
+                    grafo_aux.adicionar_aresta(u, v)
+        else:
+            # Se todas as arestas forem pontes, escolher uma das pontes
+            v = arestas[0]
+            grafo_aux.remover_aresta(u, v)
+            caminho.append((u, v))
+            u = v  # Caminhar para o próximo vértice
 
     return caminho
+
+
+
