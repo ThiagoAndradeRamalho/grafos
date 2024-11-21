@@ -1,4 +1,5 @@
-from biblioteca.representacoes.grafo import Grafo
+from grafo import Grafo
+
 from manipulacao import *
 
 # def main():
