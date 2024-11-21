@@ -1,5 +1,4 @@
 from grafo import Grafo
-
 from manipulacao import *
 
 # def main():
@@ -38,7 +37,7 @@ def menu():
     print("14 - Verificar se o grafo é completo")
     print("15 - Verificar conectividade (simplesmente conexo, semi-forte, forte)")
     print("16 - Detectar componentes fortemente conexos (Kosaraju)")
-    print("17 - Detectar pontes (Naive)")
+    print("17 - Detectar pontes ")
     print("18 - Detectar pontes (Tarjan)")
     print("19 - Detectar articulações")
     print("20 - Encontrar caminho euleriano (Algoritmo de Fleury)")
@@ -47,7 +46,6 @@ def menu():
     print("23 - Exibir arestas")
     print("24 - Buscar em Profundidade (DFS)")
     print("25 - Sair")
-    print("26 - subja")
 
 def main():
 
@@ -147,9 +145,15 @@ def main():
             conectividade = verifica_conectividade(grafo)
             print(f"Conectividade: {conectividade}")
         
-        elif opcao == '16':  
-            componentes = grafo.detectar_componentes_fortemente_conexos()
-            print(f"Componentes fortemente conexos: {componentes}")
+        elif opcao == '16':
+            componentes = kosaraju(grafo)
+            if componentes is not None:
+                print("Componentes Fortemente Conexas:")
+                for i, componente in enumerate(componentes, start=1):
+                    print(f"Componente {i}: {componente}")
+            else:
+                print("O algoritmo Kosaraju não pode ser executado para este tipo de grafo.")
+
         
         elif opcao == '17':  
             print("Detectando pontes usando o método naive...")
@@ -158,18 +162,29 @@ def main():
         
         elif opcao == '18':  
             print("Detectando pontes usando o método de Tarjan...")
-            pontes = grafo.detectar_pontes_tarjan()
+            pontes = tarjan(grafo)
             print(f"Pontes encontradas: {pontes}")
         
-        elif opcao == '19':  
+        elif opcao == '19':
+            v = int(input("Digite o vértice v: "))
             print("Detectando articulações...")
-            articulacoes = grafo.detectar_articulacoes()
-            print(f"Articulações encontradas: {articulacoes}")
+            if checar_articulacao(grafo, v):
+                print(f"O vértice {v} é uma articulação!")
+            else:
+                print(f"O vértice {v} não é uma articulação.")
+
         
-        elif opcao == '20':  
-            print("Encontrando caminho euleriano (Algoritmo de Fleury)...")
-            caminho = fleury(grafo)
-            print(f"Caminho euleriano encontrado: {caminho}")
+# Ajuste na chamada da função
+        elif opcao == '20':
+            resultado = fleury(grafo)
+
+            if resultado == "Não é euleriano":
+                print("O grafo não é euleriano (possui mais de dois vértices de grau ímpar).")
+            elif resultado == "Semi-euleriano":
+                print("O grafo é semi-euleriano (possui exatamente dois vértices de grau ímpar).")
+            else:
+                print(f"Ciclo euleriano encontrado: {resultado}")
+
 
         elif opcao == '21':  
             formato = input("Digite o formato de exportação (e.g., GEXF, GDF, GML): ")
@@ -187,9 +202,6 @@ def main():
 
         elif opcao == '25':  
             print("Encerrando o programa.")
-            break
-        elif opcao == '26':  
-            subgrafo_subjacente(grafo)
             break
 
         else:

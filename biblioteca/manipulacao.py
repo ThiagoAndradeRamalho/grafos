@@ -280,3 +280,166 @@ def fleury(grafo):
     print(f"Caminho euleriano encontrado: {caminho}")
     return caminho
 
+def dfs(grafo, v, visitado):
+
+    visitado[v] = True
+    for vizinho in grafo.lista[v]:
+        if not visitado[vizinho]:
+            dfs(grafo, vizinho, visitado)
+
+
+
+def kosaraju(self):
+    def dfs(grafo, vertice, visitados, stack=None):
+        visitados[vertice] = True
+        for vizinho in grafo.lista[vertice]:
+            if not visitados[vizinho]:
+                dfs(grafo, vizinho, visitados, stack)
+        if stack is not None:
+            stack.append(vertice)  # Empilha o vértice após explorar seus vizinhos
+
+    def construir_reverso(grafo):
+        grafo_reverso = Grafo(grafo.num_vertices, grafo.direcionado)
+        for u in range(grafo.num_vertices):
+            for v in grafo.lista[u]:
+                grafo_reverso.adicionar_aresta(v, u)  # Inverte as arestas
+        return grafo_reverso
+
+        # Passo 1: Fazer busca em profundidade (DFS) e salvar tempos de término
+    visitados = [False] * self.num_vertices
+    stack = []
+    for v in range(self.num_vertices):
+        if not visitados[v]:
+            dfs(self, v, visitados, stack)
+
+        # Passo 2: Construir o grafo reverso
+    grafo_reverso = construir_reverso(self)
+
+        # Passo 3: Fazer DFS no grafo reverso em ordem decrescente de tempos de término
+    visitados = [False] * grafo_reverso.num_vertices
+    cfc = []  # Lista para armazenar os componentes fortemente conectados
+    while stack:
+        v = stack.pop()
+        if not visitados[v]:
+            componente = []
+            dfs(grafo_reverso, v, visitados, componente)
+            cfc.append(componente)
+
+    return cfc
+
+def numero_componentes_conexos(grafo):
+        """Retorna o número de componentes conexos no grafo."""
+        visitados = [False] * grafo.num_vertices
+
+        def dfs(vertice):
+            visitados[vertice] = True
+            for vizinho in obter_vizinhos(grafo, vertice):
+                if not visitados[vizinho]:
+                    dfs(vizinho)
+
+        componentes = 0
+        for v in range(grafo.num_vertices):
+            if not visitados[v]:
+                componentes += 1
+                dfs(v)
+        
+        return componentes
+
+def obter_vizinhos(grafo, vertice):
+        return grafo.lista[vertice]
+
+def checar_ponte(grafo, u, v):
+
+    copia = Grafo(grafo.num_vertices, direcionado=False)
+    copia.lista = [adjacentes[:] for adjacentes in grafo.lista]
+    if v in copia.lista[u]:
+        copia.lista[u].remove(v)
+    if u in copia.lista[v]:
+        copia.lista[v].remove(u)
+        
+
+    componentes_antes = numero_componentes_conexos(grafo)
+    componentes_depois = numero_componentes_conexos(copia)
+    return componentes_depois > componentes_antes
+
+def checar_articulacao(grafo, v):
+
+    copia = Grafo(grafo.num_vertices, grafo.direcionado)
+    copia.lista = [adjacentes[:] for adjacentes in grafo.lista]
+        
+    # Remover o vértice e as arestas incidentes
+    copia.lista.pop(v)
+    for adjacentes in copia.lista:
+        if v in adjacentes:
+            adjacentes.remove(v)
+    copia.num_vertices -= 1  # Atualiza o número de vértices
+    
+    # Contar o número de componentes conexos antes e depois de remover o vértice
+    componentes_antes = numero_componentes_conexos(grafo)
+    componentes_depois = numero_componentes_conexos(copia)
+    
+    # Se o número de componentes aumentou, a remoção do vértice desconectou o grafo
+    if componentes_depois > componentes_antes:
+        print(f"A remoção do vértice {v} desconectou o grafo.")
+        return True  # O vértice é uma articulação
+    else:
+        print(f"A remoção do vértice {v} não desconectou o grafo.")
+        return False  # O vértice não é uma articulação
+
+def tarjan(grafo):
+
+    tempo_descoberta = {}  # Tempo de descoberta de cada vértice
+    menor_tempo = {}       # Menor tempo alcançável a partir do vértice
+    pai = {}               # Pai do vértice na DFS
+    pontes = []            # Lista para armazenar as pontes encontradas
+    tempo = [0]            # Contador de tempo (usado como lista para mutabilidade)
+
+    # Função DFS interna
+    def dfs(v):
+            # Configura o tempo de descoberta e o menor tempo inicial do vértice atual
+        tempo_descoberta[v] = menor_tempo[v] = tempo[0]
+        tempo[0] += 1
+
+            # Explorar todos os vizinhos de v
+        for u in grafo.lista[v]:
+            if u not in tempo_descoberta:  # Se o vértice u não foi visitado
+                pai[u] = v
+                dfs(u)  # Recursão na DFS
+
+                    # Após a DFS de u, atualizar o menor_tempo de v
+                menor_tempo[v] = min(menor_tempo[v], menor_tempo[u])
+
+                    # Verificar se a aresta (v, u) é uma ponte
+                if menor_tempo[u] > tempo_descoberta[v]:
+                    pontes.append((v, u))  # Armazenar a aresta como ponte
+                # Se u já foi visitado e não é o pai de v, atualizar menor_tempo[v]
+            elif u != pai.get(v):
+                menor_tempo[v] = min(menor_tempo[v], tempo_descoberta[u])
+
+        # Iniciar DFS para todos os vértices não visitados
+    for v in range(grafo.num_vertices):
+        if v not in tempo_descoberta:
+            dfs(v)
+
+    return pontes
+
+def fleury(grafo):
+    graus = [len(grafo.lista[v]) for v in range(grafo.num_vertices)]
+    impares = [v for v in range(grafo.num_vertices) if graus[v] % 2 != 0]
+    if len(impares) > 2:
+        return "O grafo não é euleriano."
+
+    caminho = []
+    vertice_atual = impares[0] if impares else 0
+    stack = [vertice_atual]
+
+    while stack:
+        u = stack[-1]
+        if grafo.lista[u]:
+            v = grafo.lista[u].pop()
+            grafo.lista[v].remove(u)  # Remover a aresta simétrica
+            stack.append(v)
+        else:
+            caminho.append(stack.pop())
+
+    return caminho
