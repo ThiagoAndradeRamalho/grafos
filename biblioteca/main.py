@@ -211,12 +211,18 @@ def main():
             else:
                 print(f"O vértice {v} não é uma articulação.")
 
-
         
-        elif opcao == '20':  
-            print("Encontrando caminho euleriano (Algoritmo de Fleury)...")
-            caminho = grafo.encontrar_caminho_euleriano()
-            print(f"Caminho euleriano encontrado: {caminho}")
+# Ajuste na chamada da função
+        elif opcao == '20':
+            resultado = fleury(grafo)
+
+            if resultado == "Não é euleriano":
+                print("O grafo não é euleriano (possui mais de dois vértices de grau ímpar).")
+            elif resultado == "Semi-euleriano":
+                print("O grafo é semi-euleriano (possui exatamente dois vértices de grau ímpar).")
+            else:
+                print(f"Ciclo euleriano encontrado: {resultado}")
+
 
         elif opcao == '21':  
             formato = input("Digite o formato de exportação (e.g., GEXF, GDF, GML): ")
