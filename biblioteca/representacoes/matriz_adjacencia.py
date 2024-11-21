@@ -25,10 +25,10 @@ class GrafoMatrizAdjacencia:
 
         
         
-    def remover_aresta(self, u, v):
-        self.matriz[u][v] = 0
+    def remover_aresta(self, v, u):
+        self.matriz[v][u] = 0
         if not self.direcionado:
-            self.matriz[v][u] = 0
+            self.matriz[u][v] = 0
 
         
     

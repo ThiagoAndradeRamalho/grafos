@@ -518,3 +518,83 @@ def tarjan(grafo):
                 dfs(v)
 
         return pontes  # Retorna a lista de pontes encontradas
+def fleury(grafo):
+    # Para GrafoMatrizAdjacencia
+    if isinstance(grafo, GrafoMatrizAdjacencia):
+        graus = [sum(grafo.matriz[v]) for v in range(grafo.num_vertices)]
+        impares = [v for v in range(grafo.num_vertices) if graus[v] % 2 != 0]
+        if len(impares) > 2:
+            return "O grafo não é euleriano."
+
+        caminho = []
+        vertice_atual = impares[0] if impares else 0
+        stack = [vertice_atual]
+
+        while stack:
+            u = stack[-1]
+            aresta_encontrada = False
+            for v in range(grafo.num_vertices):
+                if grafo.matriz[u][v] == 1:
+                    grafo.matriz[u][v] = 0
+                    if not grafo.direcionado:
+                        grafo.matriz[v][u] = 0
+                    stack.append(v)
+                    aresta_encontrada = True
+                    break
+            if not aresta_encontrada:
+                caminho.append(stack.pop())
+
+        return caminho
+
+    # Para GrafoListaAdjacencia
+    elif isinstance(grafo, GrafoListaAdjacencia):
+        graus = [len(grafo.lista[v]) for v in range(grafo.num_vertices)]
+        impares = [v for v in range(grafo.num_vertices) if graus[v] % 2 != 0]
+        if len(impares) > 2:
+            return "O grafo não é euleriano."
+
+        caminho = []
+        vertice_atual = impares[0] if impares else 0
+        stack = [vertice_atual]
+
+        while stack:
+            u = stack[-1]
+            if grafo.lista[u]:
+                v = grafo.lista[u].pop()
+                grafo.lista[v].remove(u)  # Remover a aresta simétrica
+                stack.append(v)
+            else:
+                caminho.append(stack.pop())
+
+        return caminho
+
+    # Para GrafoMatrizIncidencia
+    elif isinstance(grafo, GrafoMatrizIncidencia):
+        graus = [sum(grafo.matriz[v]) for v in range(grafo.num_vertices)]
+        impares = [v for v in range(grafo.num_vertices) if graus[v] % 2 != 0]
+        if len(impares) > 2:
+            return "O grafo não é euleriano."
+
+        caminho = []
+        vertice_atual = impares[0] if impares else 0
+        stack = [vertice_atual]
+
+        while stack:
+            u = stack[-1]
+            aresta_encontrada = False
+            for i, aresta in enumerate(grafo.arestas):
+                if grafo.matriz[u][i] == 1:
+                    v = aresta[1] if grafo.arestas[i][0] == u else aresta[0]
+                    grafo.matriz[u][i] = 0
+                    if not grafo.direcionado:
+                        grafo.matriz[v][i] = 0
+                    stack.append(v)
+                    aresta_encontrada = True
+                    break
+            if not aresta_encontrada:
+                caminho.append(stack.pop())
+
+        return caminho
+
+    else:
+        return "Tipo de grafo não reconhecido."
