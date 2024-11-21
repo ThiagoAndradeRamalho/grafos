@@ -1,4 +1,4 @@
-from biblioteca.representacoes.grafo import Grafo
+from grafo import Grafo
 from manipulacao import *
 
 # def main():
@@ -46,7 +46,6 @@ def menu():
     print("23 - Exibir arestas")
     print("24 - Buscar em Profundidade (DFS)")
     print("25 - Sair")
-    print("26 - subja")
 
 def main():
 
@@ -186,9 +185,6 @@ def main():
 
         elif opcao == '25':  
             print("Encerrando o programa.")
-            break
-        elif opcao == '26':  
-            subgrafo_subjacente(grafo)
             break
 
         else:

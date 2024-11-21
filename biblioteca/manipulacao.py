@@ -1,4 +1,4 @@
-from biblioteca.representacoes.grafo import Grafo
+from grafo import Grafo
 
 rotulos_vertices = {}
 rotulos_arestas = {}
