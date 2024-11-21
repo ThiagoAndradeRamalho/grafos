@@ -1,21 +1,23 @@
 
 class GrafoMatrizIncidencia:
-    def __init__(self, num_vertices, num_arestas):
+    def __init__(self, num_vertices, num_arestas, direcionado=False):
         self.num_vertices = num_vertices
         self.num_arestas = num_arestas
+        self.direcionado = direcionado
         self.matriz = [[0] * num_arestas for _ in range(num_vertices)] # cria matriz de incidencia com num_vertices linha e num_arestas colunas
             
             
-    def adicionar_aresta(self, u, v, e, direcionado=False):
-        if e >= self.num_arestas or e < 0:
-            print("Erro: índice de aresta fora do limite.")
+    def adicionar_aresta(self, u, v, e):
+        if e < 0 or e >= self.num_arestas:
+            print(f"Erro: índice de aresta fora do limite (permitido: 0 a {self.num_arestas - 1}).")
             return
-        if u >= self.num_vertices or u < 0 or v >= self.num_vertices or v < 0:
-            print("Erro: índice de vértice fora do limite.")
-            return
-        
-        self.matriz[u][e] = 1 # vertice u conectado a aresta e
-        self.matriz[v][e] = -1 if direcionado else 1 # vertice v conectado a aresta
+
+        self.matriz[u][e] = 1  # Aresta de u
+        if self.direcionado:
+            self.matriz[v][e] = -1  # Aresta direcionada para v
+        else:
+            self.matriz[v][e] = 1  # Aresta não direcionada
+
         
     def obter_extremidades(self, e, direcionado=False): # retornar os vertices conectados pela aresta e
         vertices = []
