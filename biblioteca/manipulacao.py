@@ -1,9 +1,4 @@
-# Este módulo será responsável pelas operações de manipulação e consulta dos grafos.
-
-
-from representacoes.lista_adjacencia import GrafoListaAdjacencia
-from representacoes.matriz_adjacencia import GrafoMatrizAdjacencia
-from representacoes.matriz_incidencia import GrafoMatrizIncidencia
+from biblioteca.representacoes.grafo import Grafo
 
 rotulos_vertices = {}
 rotulos_arestas = {}
@@ -14,14 +9,14 @@ def rotular_vertice(grafo, vertice, rotulo):
     if grafo not in rotulos_vertices:
         rotulos_vertices[grafo] = {}
 
-    rotulos_vertices[grafo][vertice] = rotulo
+    rotulos_vertices[grafo][vertice] = rotulo   
     
     
 def obter_rotulo_vertice(grafo, vertice):
     if grafo in rotulos_vertices and vertice in rotulos_vertices[grafo]:
         return rotulos_vertices[grafo][vertice]
     else:
-        return None
+        return "Nao existe o vertice {vertice}"
     
 def rotular_aresta(grafo, u, v, rotulo):
     if grafo not in rotulos_arestas:
@@ -45,133 +40,49 @@ def ponderar_aresta(grafo, u, v, peso):
 
                 
 def checar_adjacencia_vertices(grafo, u, v):
-    if isinstance(grafo, GrafoMatrizAdjacencia):
-        return grafo.matriz[u][v] != 0
-    elif isinstance(grafo, GrafoListaAdjacencia):
-        return v in grafo.lista[u]
-    elif isinstance(grafo, GrafoMatrizIncidencia):
-        for aresta in range(len(grafo.matriz[0])):
-            if grafo.matriz[u][aresta] != 0 and grafo.matriz[v][aresta] != 0:
-                return True
-        return False
-    else:
-        print("Tipo de grafo desconhecido.")
-        return False
+    return v in grafo.lista[u]
 
 
-def checar_adjacencia_arestas(grafo, u, v):
-    if isinstance(grafo, GrafoListaAdjacencia):
-        return v in grafo.lista[u]
-    
-    elif isinstance(grafo, GrafoMatrizAdjacencia):
-        return grafo.matriz[u][v] != 0
-    
-    elif isinstance(grafo, GrafoMatrizIncidencia):
-        for aresta in range(len(grafo.matriz[0])):
-            if grafo.matriz[u][aresta] != 0 and grafo.matriz[v][aresta] != 0:
-                return True
+
+def checar_adjacencia_arestas(u, v, x, y):
+    if v != x:
         return False
-    else:
-        print("Tipo de grafo desconhecido.")
-        return False
+    
+    return existe_aresta(u,v) and existe_aresta(x,y)
         
         
 def existe_aresta(grafo, v, u):
-    if isinstance(grafo, GrafoMatrizAdjacencia):
-        return grafo.matriz[u][v] != 0
-    elif isinstance(grafo, GrafoListaAdjacencia):
         return v in grafo.lista[u]
-    elif isinstance(grafo, GrafoMatrizIncidencia):
-        for aresta in range(len(grafo.matriz[0])):
-            if grafo.matriz[u][aresta] != 0 and grafo.matriz[v][aresta] != 0:
-                return True
-        return False
 
 def quantidade_vertices(grafo):
-    if isinstance(grafo, GrafoMatrizAdjacencia):
-        return len(grafo.matriz)  # num de vertices = o tamanho da matriz
-    
-    elif isinstance(grafo, GrafoListaAdjacencia):
         return len(grafo.lista)  # num de vertices = o tamanho da lista de adjacência
-    
-    elif isinstance(grafo, GrafoMatrizIncidencia):
-        return len(grafo.matriz)  # num de vertices = o num de linhas na matriz de incidência
-    
-    else:
-        print("Tipo de grafo desconhecido.")
-        return 0
 
 def quantidade_arestas(grafo):
-    if isinstance(grafo, GrafoMatrizAdjacencia):
-        return sum(1 for i in range(len(grafo.matriz)) for j in range(i, len(grafo.matriz)) if grafo.matriz[i][j] != 0)
-    elif isinstance(grafo, GrafoListaAdjacencia):
-        return sum(len(adjacentes) for adjacentes in grafo.lista) // 2    
-    elif isinstance(grafo, GrafoMatrizIncidencia):
-        return len(grafo.matriz[0])
-    else:
-        print("Tipo de grafo desconhecido.")
-        return 0
+    return sum(len(adjacentes) for adjacentes in grafo.lista) // 2    
 
 def grafo_vazio(grafo):
     return quantidade_arestas(grafo) == 0
 
 def grafo_completo(grafo):
-    if isinstance(grafo, GrafoMatrizAdjacencia):
-        n = len(grafo.matriz)  
-        return all(grafo.matriz[i][j] != 0 for i in range(n) for j in range(i + 1, n))
-    
-    elif isinstance(grafo, GrafoListaAdjacencia):
-        n = len(grafo.lista)  
-        # verifica se cada vertice ta conectado a todos os outros vertices
-        return all(len(grafo.lista[v]) == n - 1 for v in grafo.lista)
-    
-    elif isinstance(grafo, GrafoMatrizIncidencia):
-        n = len(grafo.matriz)  
-        max_arestas = n * (n - 1) // 2  # max de arestas em um grafo completo
-        return quantidade_arestas(grafo) == max_arestas
-    
-    else:
-        print("Tipo de grafo desconhecido.")
-        return False
-    
+    n = len(grafo.lista)  
+    # verifica se cada vertice ta conectado a todos os outros vertices
+    return all(len(grafo.lista[v]) == n - 1 for v in grafo.lista)
     
 
 def exibir_vertices(grafo):
     num_vertices = quantidade_vertices(grafo)
     print(f"Vértices do grafo ({num_vertices} no total):")
-    if isinstance(grafo, GrafoMatrizAdjacencia) or isinstance(grafo, GrafoMatrizIncidencia):
-        for i in range(num_vertices):
-            rotulo = rotulos_vertices.get(grafo, {}).get(i, "sem rótulo")
-            peso = pesos_vertices.get(grafo, {}).get(i, "sem peso")
-            print(f"Vértice {i} (Rótulo: {rotulo}, Peso: {peso})")
-    elif isinstance(grafo, GrafoListaAdjacencia):
-        for vertice in range(num_vertices): 
-            rotulo = rotulos_vertices.get(grafo, {}).get(vertice, "sem rótulo")
-            peso = pesos_vertices.get(grafo, {}).get(vertice, "sem peso")
-            print(f"Vértice {vertice} (Rótulo: {rotulo}, Peso: {peso})")
+    for vertice in range(num_vertices): 
+        rotulo = rotulos_vertices.get(grafo, {}).get(vertice, "sem rótulo")
+        peso = pesos_vertices.get(grafo, {}).get(vertice, "sem peso")
+        print(f"Vértice {vertice} (Rótulo: {rotulo}, Peso: {peso})")
 
 
 def exibir_arestas(grafo):
     print("Arestas do grafo:")
-    if isinstance(grafo, GrafoMatrizAdjacencia):
-        for i in range(len(grafo.matriz)):
-            for j in range(i, len(grafo.matriz[i])):
-                if grafo.matriz[i][j] != 0:
-                    rotulo = rotulos_arestas.get(grafo, {}).get((i, j), "sem rótulo")
-                    peso = pesos_arestas.get(grafo, {}).get((i, j), "sem peso")
-                    print(f"Aresta entre {i} e {j} (Rótulo: {rotulo}, Peso: {peso})")
-    elif isinstance(grafo, GrafoListaAdjacencia):
-        for u in range(grafo.num_vertices):
-            for v in grafo.lista[u]:
-                if u < v:  
-                    rotulo = rotulos_arestas.get(grafo, {}).get((u, v), "sem rótulo")
-                    peso = pesos_arestas.get(grafo, {}).get((u, v), "sem peso")
-                    print(f"Aresta entre {u} e {v} (Rótulo: {rotulo}, Peso: {peso})")
-    elif isinstance(grafo, GrafoMatrizIncidencia):
-        for e in range(len(grafo.matriz[0])):
-            vertices_conectados = [v for v in range(len(grafo.matriz)) if grafo.matriz[v][e] != 0]
-            if len(vertices_conectados) == 2:
-                u, v = vertices_conectados
+    for u in range(grafo.num_vertices):
+        for v in grafo.lista[u]:
+            if u < v:  
                 rotulo = rotulos_arestas.get(grafo, {}).get((u, v), "sem rótulo")
                 peso = pesos_arestas.get(grafo, {}).get((u, v), "sem peso")
                 print(f"Aresta entre {u} e {v} (Rótulo: {rotulo}, Peso: {peso})")
@@ -225,45 +136,16 @@ def _dfs(grafo, u, TD, TT, pai, t, ordem_visitados, destino=None, encontrado=Non
     return t
 
 def vizinhos(grafo, u):
-    if isinstance(grafo, GrafoListaAdjacencia):
-        return grafo.lista[u]
-    elif isinstance(grafo, GrafoMatrizAdjacencia):
-        return [v for v in range(grafo.num_vertices) if grafo.matriz[u][v] != 0]
-    elif isinstance(grafo, GrafoMatrizIncidencia):
-        return [v for v in range(grafo.num_vertices) if any(grafo.matriz[u][e] != 0 for e in range(grafo.num_arestas))]
-    else:
-        print("Tipo de grafo desconhecido.")
-        return []
+    return grafo.lista[u]
+
 
 def subgrafo_subjacente(grafo):
-    if isinstance(grafo, GrafoListaAdjacencia):
-        grafo_subjacente = GrafoListaAdjacencia(grafo.num_vertices - 1)
-        for u in range(len(grafo.lista)):
-            for v in grafo.lista[u]:
-                if u < v:
-                    grafo_subjacente.adicionar_aresta(u, v)
-        return grafo_subjacente
-
-    elif isinstance(grafo, GrafoMatrizAdjacencia):
-        grafo_subjacente = GrafoMatrizAdjacencia(grafo.num_vertices)
-        for u in range(grafo.num_vertices):
-            for v in range(grafo.num_vertices):
-                if grafo.matriz[u][v] != 0:
-                    grafo_subjacente.adicionar_aresta(u, v)
-                    grafo_subjacente.adicionar_aresta(v, u)
-        return grafo_subjacente
-
-    elif isinstance(grafo, GrafoMatrizIncidencia):
-        grafo_subjacente = GrafoMatrizAdjacencia(grafo.num_vertices)
-        for e in range(grafo.num_arestas):
-            u, v = grafo.obter_extremidades(e)
-            if u is not None and v is not None:
+    grafo_subjacente = Grafo(grafo.num_vertices - 1, False)
+    for u in range(len(grafo.lista)):
+        for v in grafo.lista[u]:
+            if u < v:
                 grafo_subjacente.adicionar_aresta(u, v)
-                grafo_subjacente.adicionar_aresta(v, u)
-        return grafo_subjacente
-
-    else:
-        raise ValueError("Representação de grafo desconhecida.")
+    return grafo_subjacente
 
 def verifica_conectividade(grafo):
     #verifica se o grafo é simplesmente conexo
@@ -313,68 +195,88 @@ def isAlcancavel(grafo, origem, destino):
     
     return encontrado[0]
 
+def busca_profundidade_componentes(grafo):
+    visitados = [False] * grafo.num_vertices
+
+    def dfs(u):
+        visitados[u] = True
+        for v in grafo.lista[u]:
+            if v < grafo.num_vertices and not visitados[v]:  # Certifique-se de que 'v' está dentro do limite
+                dfs(v)
+
+    componentes = 0
+    for u in range(grafo.num_vertices):
+        if not visitados[u] and len(grafo.lista[u]) > 0:  # Apenas processa vértices conectados
+            dfs(u)
+            componentes += 1
+
+    return componentes
 
 def naive(grafo):
     pontes = []
     if grafo.direcionado:
         subjacente = subgrafo_subjacente(grafo)
         numComponentes = busca_profundidade(subjacente)
+        print(numComponentes)
         
         for u in range(grafo.num_vertices):
             for v in grafo.lista[u]:
                 if u < v:
                     subjacente.remover_aresta(u, v)
                     n = busca_profundidade(subjacente)
+                    print("Sem a aresta",n)
                     if n > numComponentes:
                         pontes.append((u, v))
                 subjacente.adicionar_aresta(u, v)  # Restaurar aresta após a remoção
         return pontes
 
+
 def fleury(grafo):
     # Verificar número de vértices de grau ímpar
     vertices_grau_impar = [u for u in range(grafo.num_vertices) if grafo.grau(u)[0] % 2 != 0]
-    print(vertices_grau_impar)
+    print("Vértices com grau ímpar:", vertices_grau_impar)
+    
     if len(vertices_grau_impar) > 2:
         raise ValueError("O grafo não possui caminho euleriano (mais de dois vértices de grau ímpar).")
 
     grafo_aux = grafo.duplicar_grafo()
-    
-    u = vertices_grau_impar[0] if vertices_grau_impar else 0  # Escolhe vértice inicial
 
-    caminho = []
-    while any(grafo_aux.lista):  # Enquanto ainda houver arestas no grafo auxiliar
-        # Verifique se o grafo é conexo após a remoção de cada aresta
-        num_componentes = busca_profundidade(grafo_aux)
-        if num_componentes > 1:
-            raise ValueError(f"O grafo não é conexo após a remoção de uma aresta. Isso pode indicar um problema na escolha da aresta.")
+    # Escolhe o vértice inicial: se há vértices ímpares, comece por um deles; caso contrário, escolha o vértice 0
+    u = vertices_grau_impar[0] if vertices_grau_impar else 0
 
-        pontes = naive(grafo_aux)
+    caminho = []  # Caminho Euleriano
+
+    while any(len(arestas) > 0 for arestas in grafo_aux.lista):  # Enquanto houver arestas no grafo
+        print(f"Vértice atual: {u}, Arestas disponíveis: {grafo_aux.lista[u]}")
+
         arestas = grafo_aux.lista[u]
 
-        # Verificar se o vértice atual tem arestas disponíveis
-        if not arestas:
-            raise ValueError(f"O vértice {u} não tem mais arestas conectadas. O grafo pode estar desconexo.")
+        if not arestas:  # Se não houver mais arestas para este vértice
+            print(f"Vértice {u} sem arestas. Encerrando busca neste ramo.")
+            break
 
-        # Tentar escolher uma aresta não-ponte
-        for v in arestas:
-            if (u, v) not in pontes and (v, u) not in pontes:  # Se for uma aresta não-ponte
-                grafo_aux.remover_aresta(u, v)
-                num_componentes = busca_profundidade(grafo_aux)
-                if num_componentes == 1:  # Verificar se ainda é conexo
-                    caminho.append((u, v))
-                    u = v  # Caminhar para o próximo vértice
-                    break
-                else:
-                    # Se a remoção desconectar, desfaz a remoção e tenta outra aresta
-                    grafo_aux.adicionar_aresta(u, v)
-        else:
-            # Se todas as arestas forem pontes, escolher uma das pontes
+        for v in arestas[:]:  # Iterar sobre uma cópia para evitar problemas durante modificações
+            print(f"Tentando a aresta ({u}, {v})")
+            grafo_aux.remover_aresta(u, v)  # Remove a aresta temporariamente
+
+            if busca_profundidade_componentes(grafo_aux) == 1 or len(arestas) == 1:  # Verifica conectividade
+                print(f"Aresta ({u}, {v}) removida. Atualizando caminho.")
+                caminho.append((u, v))
+                u = v  # Atualiza para o próximo vértice
+                break
+            else:
+                # Se a remoção desconectou o grafo, restaura a aresta
+                grafo_aux.adicionar_aresta(u, v)
+
+        else:  # Se todas as arestas disponíveis forem pontes
             v = arestas[0]
             grafo_aux.remover_aresta(u, v)
+            print(f"Todas as arestas são pontes. Removendo ({u}, {v}).")
             caminho.append((u, v))
-            u = v  # Caminhar para o próximo vértice
+            u = v  # Atualiza para o próximo vértice
 
+        print(f"Caminho até agora: {caminho}")
+
+    print(f"Caminho euleriano encontrado: {caminho}")
     return caminho
-
-
 
