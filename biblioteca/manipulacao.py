@@ -443,3 +443,43 @@ def fleury(grafo):
             caminho.append(stack.pop())
 
     return caminho
+
+def fleury_modificado(grafo):
+    # Identificar as pontes do grafo usando Tarjan
+    pontes = set(tarjan(grafo))  # Usar um conjunto para busca eficiente
+    graus = [len(grafo.lista[v]) for v in range(grafo.num_vertices)]
+    impares = [v for v in range(grafo.num_vertices) if graus[v] % 2 != 0]
+
+    # Verificar se o grafo é euleriano ou semi-euleriano
+    if len(impares) > 2:
+        return "O grafo não é euleriano."
+
+    caminho = []
+    vertice_atual = impares[0] if impares else 0
+    stack = [vertice_atual]
+    s = set()  # Conjunto para armazenar vértices visitados
+
+    while stack:
+        u = stack[-1]
+        s.add(u)  # Adiciona o vértice atual ao conjunto S
+
+        # Verificar as arestas disponíveis para escolher a próxima
+        arestas_disponiveis = [(u, v) for v in grafo.lista[u] if (u, v) not in pontes and (v, u) not in pontes]
+        
+        # Se não houver arestas disponíveis que não sejam pontes, usar qualquer outra
+        if not arestas_disponiveis:
+            if grafo.lista[u]:
+                v = grafo.lista[u].pop()
+                grafo.lista[v].remove(u)  # Remover a aresta simétrica
+                stack.append(v)
+            else:
+                caminho.append(stack.pop())
+        else:
+            # Escolher uma aresta que não seja uma ponte
+            v = arestas_disponiveis[0][1]
+            grafo.lista[u].remove(v)
+            grafo.lista[v].remove(u)  # Remover a aresta simétrica
+            stack.append(v)
+
+    return caminho
+

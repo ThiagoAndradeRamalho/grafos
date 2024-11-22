@@ -59,10 +59,21 @@ def main():
         opcao = input("Escolha uma opção: ").strip()
 
         if opcao == '1':  
-            u = int(input("Digite o vértice de origem: "))
-            v = int(input("Digite o vértice de destino: "))
-            grafo.adicionar_aresta(u, v)
-            print(f"Aresta entre {u} e {v} adicionada na lista de adjacência.")
+            print("Digite as arestas para adicionar no formato (u, v). Digite 'FIM' para encerrar.")
+            while True:
+                entrada = input("Digite a aresta (ou 'FIM' para encerrar): ").strip()
+                if entrada.upper() == "FIM":
+                    break
+                try:
+                    if direcionado:
+                        u, v = map(int, entrada.split(","))
+                    else:
+                        u, v = map(int, entrada.split(","))
+                    grafo.adicionar_aresta(u, v)
+                    print(f"Aresta entre {u} e {v} adicionada.")
+                except ValueError:
+                    print("Entrada inválida! Certifique-se de usar o formato (u, v) ou digite 'FIM' para encerrar.")
+
 
         elif opcao == '2':  
             print("\nPosições onde você pode remover arestas (lista de adjacência):")
@@ -176,7 +187,7 @@ def main():
         
 # Ajuste na chamada da função
         elif opcao == '20':
-            resultado = fleury(grafo)
+            resultado = fleury_modificado(grafo)
 
             if resultado == "Não é euleriano":
                 print("O grafo não é euleriano (possui mais de dois vértices de grau ímpar).")
