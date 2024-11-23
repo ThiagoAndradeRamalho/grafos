@@ -5,60 +5,92 @@ rotulos_arestas = {}
 pesos_vertices = {}
 pesos_arestas = {}
 
+
 def rotular_vertice(grafo, vertice, rotulo):
     if grafo not in rotulos_vertices:
         rotulos_vertices[grafo] = {}
+    rotulos_vertices[grafo][rotulo] = vertice
 
-    rotulos_vertices[grafo][vertice] = rotulo   
-    
-    
+
+def obter_vertice_por_rotulo(grafo, rotulo):
+    return rotulos_vertices.get(grafo, {}).get(rotulo)
+
+
 def obter_rotulo_vertice(grafo, vertice):
-    if grafo in rotulos_vertices and vertice in rotulos_vertices[grafo]:
-        return rotulos_vertices[grafo][vertice]
-    else:
-        return "Nao existe o vertice {vertice}"
+    for rotulo, v in rotulos_vertices.get(grafo, {}).items():
+        if v == vertice:
+            return rotulo
+    return None
+
+
+def rotular_aresta(grafo, u_rotulo, v_rotulo, rotulo):
+    u = obter_vertice_por_rotulo(grafo, u_rotulo)
+    v = obter_vertice_por_rotulo(grafo, v_rotulo)
+    if u is not None and v is not None:
+        if grafo not in rotulos_arestas:
+            rotulos_arestas[grafo] = {}
+        rotulos_arestas[grafo][(u, v)] = rotulo
+
+
+def ponderar_vertice(grafo, rotulo, peso):
+    vertice = obter_vertice_por_rotulo(grafo, rotulo)
+    if vertice is not None:
+        if grafo not in pesos_vertices:
+            pesos_vertices[grafo] = {}
+        pesos_vertices[grafo][vertice] = peso
+
+
+def ponderar_aresta(grafo, u_rotulo, v_rotulo, peso):
+    u = obter_vertice_por_rotulo(grafo, u_rotulo)
+    v = obter_vertice_por_rotulo(grafo, v_rotulo)
+    if u is not None and v is not None:
+        if grafo not in pesos_arestas:
+            pesos_arestas[grafo] = {}
+        pesos_arestas[grafo][(u, v)] = peso
+
+
+def exibir_vertices(grafo):
+    print(f"Vértices do grafo ({grafo.num_vertices} no total):")
+    for vertice in grafo.lista.keys():
+        # Obter o rótulo e o peso, se existirem
+        rotulo = grafo.rotulos_vertices.get(vertice, "sem rótulo")
+        peso = grafo.pesos_vertices.get(vertice, "sem peso")
+        print(f"Vértice '{vertice}' (Rótulo: {rotulo}, Peso: {peso})")
+
+def exibir_arestas(grafo):
+    if not grafo.lista:
+        print("Não há arestas no grafo.")
+        return
     
-def rotular_aresta(grafo, u, v, rotulo):
-    if grafo not in rotulos_arestas:
-        rotulos_arestas[grafo] = {}
-
-    rotulos_arestas[grafo][(u, v)] = rotulo
-
-def ponderar_vertice(grafo, vertice, peso):
-    if grafo not in pesos_vertices:
-        pesos_vertices[grafo] = {}
-
-    pesos_vertices[grafo][vertice] = peso
-    print(f"Vértice {vertice} ponderado com peso '{peso}'.") #passar p mmain dps
-    
-def ponderar_aresta(grafo, u, v, peso):
-    if grafo not in pesos_arestas:
-        pesos_arestas[grafo] = {}
-
-    pesos_arestas[grafo][(u, v)] = peso
-    print(f"Aresta entre {u} e {v} ponderada com peso '{peso}'.") #passar p mmain dps
-
-                
-def checar_adjacencia_vertices(grafo, u, v):
-    return v in grafo.lista[u]
+    print("Arestas do grafo:")
+    for origem, destinos in grafo.lista.items():
+        for destino in destinos:
+            rotulo = grafo.rotulos_arestas.get((origem, destino), "sem rótulo")
+            peso = grafo.pesos_arestas.get((origem, destino), "sem peso")
+            print(f"Aresta ({origem} -> {destino}) [Rótulo: {rotulo}, Peso: {peso}]")
 
 
 
-def checar_adjacencia_arestas(u, v, x, y):
-    if v != x:
-        return False
-    
-    return existe_aresta(u,v) and existe_aresta(x,y)
-        
-        
-def existe_aresta(grafo, v, u):
-        return v in grafo.lista[u]
+def existe_aresta(grafo, u_rotulo, v_rotulo):
+    u = obter_vertice_por_rotulo(grafo, u_rotulo)
+    v = obter_vertice_por_rotulo(grafo, v_rotulo)
+    return u is not None and v is not None and v in grafo.lista[u]
+
 
 def quantidade_vertices(grafo):
-        return len(grafo.lista)  # num de vertices = o tamanho da lista de adjacência
+    return grafo.num_vertices
 
-def quantidade_arestas(grafo):
-    return sum(len(adjacentes) for adjacentes in grafo.lista) // 2    
+def quantidade_arestas(self):
+    num_arestas = 0
+    
+    for u in self.lista:
+        num_arestas += len(self.lista[u])
+    
+    if not self.direcionado:
+        num_arestas //= 2
+    
+    print(f"Total de arestas: {num_arestas}")
+    return num_arestas
 
 def grafo_vazio(grafo):
     return quantidade_arestas(grafo) == 0
@@ -68,24 +100,6 @@ def grafo_completo(grafo):
     # verifica se cada vertice ta conectado a todos os outros vertices
     return all(len(grafo.lista[v]) == n - 1 for v in grafo.lista)
     
-
-def exibir_vertices(grafo):
-    num_vertices = quantidade_vertices(grafo)
-    print(f"Vértices do grafo ({num_vertices} no total):")
-    for vertice in range(num_vertices): 
-        rotulo = rotulos_vertices.get(grafo, {}).get(vertice, "sem rótulo")
-        peso = pesos_vertices.get(grafo, {}).get(vertice, "sem peso")
-        print(f"Vértice {vertice} (Rótulo: {rotulo}, Peso: {peso})")
-
-
-def exibir_arestas(grafo):
-    print("Arestas do grafo:")
-    for u in range(grafo.num_vertices):
-        for v in grafo.lista[u]:
-            if u < v:  
-                rotulo = rotulos_arestas.get(grafo, {}).get((u, v), "sem rótulo")
-                peso = pesos_arestas.get(grafo, {}).get((u, v), "sem peso")
-                print(f"Aresta entre {u} e {v} (Rótulo: {rotulo}, Peso: {peso})")
 
 def busca_profundidade(grafo):
     num_vertices = quantidade_vertices(grafo)
@@ -114,66 +128,86 @@ def busca_profundidade(grafo):
 
     return componentes
 
-def _dfs(grafo, u, TD, TT, pai, t, ordem_visitados, destino=None, encontrado=None):
-    t += 1
+def _dfs(grafo, origem, TD, TT, pai, t, ordem_visitados, destino=None, encontrado=None):
+    """
+    Função auxiliar para realizar DFS. Agora funciona com vértices nomeados.
+    """
+    mapa = grafo.mapear_vertices_para_indices()
+    u = mapa[origem]  # Converte o vértice de string para índice
     TD[u] = t
-    ordem_visitados.append(u)
-
-    # Verifica se alcançamos o destino
-    if destino is not None and u == destino:
-        if encontrado is not None:
-            encontrado[0] = True  # Marca que encontramos o destino
-        return t
-
-    # Continua a busca
-    for v in vizinhos(grafo, u):
-        if TD[v] == 0:  # Vértice não visitado
-            pai[v] = u
-            t = _dfs(grafo, v, TD, TT, pai, t, ordem_visitados, destino, encontrado)
-
+    ordem_visitados.append(origem)
     t += 1
+
+    for vizinho in grafo.lista[origem]:
+        if destino and encontrado[0]:  # Interrompe a busca se já encontrou o destino
+            return
+        v = mapa[vizinho]
+        if TD[v] == -1:  # Vizinho não visitado
+            pai[v] = origem
+            _dfs(grafo, vizinho, TD, TT, pai, t, ordem_visitados, destino, encontrado)
+
     TT[u] = t
-    return t
+    t += 1
+
+    # Marca que encontrou o destino, se aplicável
+    if origem == destino:
+        encontrado[0] = True
+
+
 
 def vizinhos(grafo, u):
     return grafo.lista[u]
 
 
 def subgrafo_subjacente(grafo):
-    grafo_subjacente = Grafo(grafo.num_vertices - 1, False)
-    for u in range(len(grafo.lista)):
-        for v in grafo.lista[u]:
-            if u < v:
-                grafo_subjacente.adicionar_aresta(u, v)
-    return grafo_subjacente
+    subjacente = Grafo()
+
+    # Adicionando os vértices ao subgrafo
+    for vertice in grafo.lista.keys():
+        subjacente.adicionar_vertice(vertice)
+
+    # Adicionando as arestas ao subgrafo (ignora direção)
+    for origem, destinos in grafo.lista.items():
+        for destino in destinos:
+            if not subjacente.existe_aresta(origem, destino) and not subjacente.existe_aresta(destino, origem):
+                subjacente.adicionar_aresta(origem, destino)
+    
+    return subjacente
+
 
 def verifica_conectividade(grafo):
-    #verifica se o grafo é simplesmente conexo
-    grafo_subjacente = subgrafo_subjacente(grafo)
-    componentes = busca_profundidade(grafo_subjacente)
+    """
+    Verifica o nível de conectividade de um grafo:
+    - Simplesmente conexo (S-Conexo)
+    - Semifortemente conexo (SF-Conexo)
+    - Fortemente conexo (F-Conexo)
+    """
+
+    # Verifica se o grafo é simplesmente conexo
+    grafo_subjacente = subgrafo_subjacente(grafo)  # Subgrafo ignorando a direção das arestas
+    componentes = busca_profundidade_componentes(grafo_subjacente)
 
     if componentes == 1:
         print("O grafo é simplesmente conexo (S-Conexo).")
     else:
         print(f"O grafo não é simplesmente conexo. Ele possui {componentes} componentes.")
+        return "Não Conexo"
 
-    #verifica se o grafo é semifortemente conexo
-    num_vertices = grafo.num_vertices
-
-    #verifica para cada par de vértices (u, v)
-    for u in range(num_vertices):
-        for v in range(num_vertices):
+    # Verifica se o grafo é semifortemente conexo
+    num_vertices = len(grafo.lista)
+    for u in grafo.lista:
+        for v in grafo.lista:
             if u != v:
-                # Confere se pelo menos um alcança o outro
                 if not (isAlcancavel(grafo, u, v) or isAlcancavel(grafo, v, u)):
                     print(f"O grafo não é semifortemente conexo. Problema nos vértices ({u}, {v}).")
-                    return "S-Conexo"
+                    return "Simplesmente Conexo"
 
     print("O grafo é semifortemente conexo (SF-Conexo).")
-    for u in range(num_vertices):
-        for v in range(num_vertices):
+
+    # Verifica se o grafo é fortemente conexo
+    for u in grafo.lista:
+        for v in grafo.lista:
             if u != v:
-                # Verifica se há conectividade bidirecional (u → v e v → u)
                 if not (isAlcancavel(grafo, u, v) and isAlcancavel(grafo, v, u)):
                     print(f"O grafo não é fortemente conexo. Problema nos vértices ({u}, {v}).")
                     return "Semifortemente Conexo"
@@ -182,53 +216,76 @@ def verifica_conectividade(grafo):
     return "Fortemente Conexo"
 
 
+
 def isAlcancavel(grafo, origem, destino):
-    num_vertices = grafo.num_vertices
-    TD = [0] * num_vertices
-    TT = [0] * num_vertices
+    """
+    Verifica se é possível alcançar `destino` a partir de `origem`.
+    """
+    num_vertices = len(grafo.lista)
+    TD = [-1] * num_vertices  # Tempo de descoberta
+    TT = [-1] * num_vertices  # Tempo de término
     pai = [None] * num_vertices
     ordem_visitados = []
-    encontrado = [False]  # Variável mutável para verificar se destino foi alcançado
+    encontrado = [False]
 
-    # Executa a DFS a partir da origem
     _dfs(grafo, origem, TD, TT, pai, 0, ordem_visitados, destino, encontrado)
-    
     return encontrado[0]
 
-def busca_profundidade_componentes(grafo):
-    visitados = [False] * grafo.num_vertices
 
-    def dfs(u):
-        visitados[u] = True
-        for v in grafo.lista[u]:
-            if v < grafo.num_vertices and not visitados[v]:  # Certifique-se de que 'v' está dentro do limite
-                dfs(v)
+def busca_profundidade_componentes(grafo):
+    """
+    Retorna o número de componentes conectados em um grafo.
+    """
+    visitados = set()
+
+    def dfs(v):
+        """
+        Realiza a busca em profundidade a partir de um vértice.
+        """
+        visitados.add(v)
+        for vizinho in grafo.lista.get(v, []):
+            if vizinho not in visitados:
+                dfs(vizinho)
 
     componentes = 0
-    for u in range(grafo.num_vertices):
-        if not visitados[u] and len(grafo.lista[u]) > 0:  # Apenas processa vértices conectados
-            dfs(u)
+
+    # Percorre todos os vértices do grafo
+    for vertice in grafo.lista.keys():
+        if vertice not in visitados:
+            dfs(vertice)
             componentes += 1
 
     return componentes
 
 def naive(grafo):
     pontes = []
-    if grafo.direcionado:
-        subjacente = subgrafo_subjacente(grafo)
-        numComponentes = busca_profundidade(subjacente)
-        print(numComponentes)
-        
-        for u in range(grafo.num_vertices):
-            for v in grafo.lista[u]:
-                if u < v:
-                    subjacente.remover_aresta(u, v)
-                    n = busca_profundidade(subjacente)
-                    print("Sem a aresta",n)
-                    if n > numComponentes:
-                        pontes.append((u, v))
-                subjacente.adicionar_aresta(u, v)  # Restaurar aresta após a remoção
-        return pontes
+    
+    # Criar o subgrafo subjacente se for direcionado
+    subjacente = subgrafo_subjacente(grafo) if grafo.direcionado else grafo
+
+    # Número inicial de componentes conexos
+    num_componentes = busca_profundidade_componentes(subjacente)
+    print("Componentes iniciais:", num_componentes)
+    
+    # Testar cada aresta
+    for u in grafo.lista.keys():
+        for v in grafo.lista[u]:
+            # Evitar dupla verificação para arestas não direcionadas
+            if grafo.direcionado or u < v:
+                # Remover a aresta e testar conectividade
+                subjacente.remover_aresta(u, v)
+                n = busca_profundidade_componentes(subjacente)
+                print(f"Sem a aresta ({u}, {v}):", n)
+                
+                # Se o número de componentes aumentou, é uma ponte
+                if n > num_componentes:
+                    pontes.append((u, v))
+                
+                # Restaurar a aresta
+                subjacente.adicionar_aresta(u, v)
+    
+    return pontes
+
 
 
 def fleury(grafo):
@@ -281,15 +338,12 @@ def fleury(grafo):
     return caminho
 
 def dfs(grafo, v, visitado):
-
     visitado[v] = True
     for vizinho in grafo.lista[v]:
         if not visitado[vizinho]:
             dfs(grafo, vizinho, visitado)
 
-
-
-def kosaraju(self):
+def kosaraju(grafo):
     def dfs(grafo, vertice, visitados, stack=None):
         visitados[vertice] = True
         for vizinho in grafo.lista[vertice]:
@@ -299,51 +353,52 @@ def kosaraju(self):
             stack.append(vertice)  # Empilha o vértice após explorar seus vizinhos
 
     def construir_reverso(grafo):
-        grafo_reverso = Grafo(grafo.num_vertices, grafo.direcionado)
-        for u in range(grafo.num_vertices):
+        grafo_reverso = Grafo(direcionado=True)
+        for u in grafo.lista:
             for v in grafo.lista[u]:
                 grafo_reverso.adicionar_aresta(v, u)  # Inverte as arestas
         return grafo_reverso
 
-        # Passo 1: Fazer busca em profundidade (DFS) e salvar tempos de término
-    visitados = [False] * self.num_vertices
+    # Passo 1: Fazer DFS no grafo original e salvar tempos de término
+    visitados = {vertice: False for vertice in grafo.lista}
     stack = []
-    for v in range(self.num_vertices):
-        if not visitados[v]:
-            dfs(self, v, visitados, stack)
+    for vertice in grafo.lista:
+        if not visitados[vertice]:
+            dfs(grafo, vertice, visitados, stack)
 
-        # Passo 2: Construir o grafo reverso
-    grafo_reverso = construir_reverso(self)
+    # Passo 2: Construir o grafo reverso
+    grafo_reverso = construir_reverso(grafo)
 
-        # Passo 3: Fazer DFS no grafo reverso em ordem decrescente de tempos de término
-    visitados = [False] * grafo_reverso.num_vertices
+    # Passo 3: Fazer DFS no grafo reverso em ordem decrescente de tempos de término
+    visitados = {vertice: False for vertice in grafo_reverso.lista}
     cfc = []  # Lista para armazenar os componentes fortemente conectados
     while stack:
-        v = stack.pop()
-        if not visitados[v]:
+        vertice = stack.pop()
+        if not visitados[vertice]:
             componente = []
-            dfs(grafo_reverso, v, visitados, componente)
+            dfs(grafo_reverso, vertice, visitados, componente)
             cfc.append(componente)
 
     return cfc
 
+
 def numero_componentes_conexos(grafo):
-        """Retorna o número de componentes conexos no grafo."""
-        visitados = [False] * grafo.num_vertices
+    """Retorna o número de componentes conexos no grafo."""
+    visitados = {vertice: False for vertice in grafo.lista}
 
-        def dfs(vertice):
-            visitados[vertice] = True
-            for vizinho in obter_vizinhos(grafo, vertice):
-                if not visitados[vizinho]:
-                    dfs(vizinho)
+    def dfs(vertice):
+        visitados[vertice] = True
+        for vizinho in grafo.lista[vertice]:
+            if not visitados[vizinho]:
+                dfs(vizinho)
 
-        componentes = 0
-        for v in range(grafo.num_vertices):
-            if not visitados[v]:
-                componentes += 1
-                dfs(v)
-        
-        return componentes
+    componentes = 0
+    for vertice in grafo.lista:
+        if not visitados[vertice]:
+            componentes += 1
+            dfs(vertice)
+    
+    return componentes
 
 def obter_vizinhos(grafo, vertice):
         return grafo.lista[vertice]
@@ -363,21 +418,29 @@ def checar_ponte(grafo, u, v):
     return componentes_depois > componentes_antes
 
 def checar_articulacao(grafo, v):
-
     copia = Grafo(grafo.num_vertices, grafo.direcionado)
     copia.lista = [adjacentes[:] for adjacentes in grafo.lista]
-        
+
+    # Encontrar o índice do vértice v
+    vertices = [str(i) for i in range(grafo.num_vertices)]  # Ajuste conforme a estrutura de seu grafo
+    if v not in vertices:
+        print(f"O vértice {v} não existe no grafo.")
+        return False
+
+    indice_v = vertices.index(v)  # Agora obtemos o índice do vértice v
+
     # Remover o vértice e as arestas incidentes
-    copia.lista.pop(v)
+    del copia.lista[indice_v]  # Remover o vértice v da lista de adjacências
     for adjacentes in copia.lista:
         if v in adjacentes:
             adjacentes.remove(v)
-    copia.num_vertices -= 1  # Atualiza o número de vértices
     
+    copia.num_vertices -= 1  # Atualiza o número de vértices
+
     # Contar o número de componentes conexos antes e depois de remover o vértice
     componentes_antes = numero_componentes_conexos(grafo)
     componentes_depois = numero_componentes_conexos(copia)
-    
+
     # Se o número de componentes aumentou, a remoção do vértice desconectou o grafo
     if componentes_depois > componentes_antes:
         print(f"A remoção do vértice {v} desconectou o grafo.")
@@ -387,7 +450,6 @@ def checar_articulacao(grafo, v):
         return False  # O vértice não é uma articulação
 
 def tarjan(grafo):
-
     tempo_descoberta = {}  # Tempo de descoberta de cada vértice
     menor_tempo = {}       # Menor tempo alcançável a partir do vértice
     pai = {}               # Pai do vértice na DFS
@@ -396,32 +458,34 @@ def tarjan(grafo):
 
     # Função DFS interna
     def dfs(v):
-            # Configura o tempo de descoberta e o menor tempo inicial do vértice atual
+        # Configura o tempo de descoberta e o menor tempo inicial do vértice atual
         tempo_descoberta[v] = menor_tempo[v] = tempo[0]
         tempo[0] += 1
 
-            # Explorar todos os vizinhos de v
+        # Explorar todos os vizinhos de v
         for u in grafo.lista[v]:
             if u not in tempo_descoberta:  # Se o vértice u não foi visitado
                 pai[u] = v
                 dfs(u)  # Recursão na DFS
 
-                    # Após a DFS de u, atualizar o menor_tempo de v
+                # Após a DFS de u, atualizar o menor_tempo de v
                 menor_tempo[v] = min(menor_tempo[v], menor_tempo[u])
 
-                    # Verificar se a aresta (v, u) é uma ponte
+                # Verificar se a aresta (v, u) é uma ponte
                 if menor_tempo[u] > tempo_descoberta[v]:
                     pontes.append((v, u))  # Armazenar a aresta como ponte
-                # Se u já foi visitado e não é o pai de v, atualizar menor_tempo[v]
+            # Se u já foi visitado e não é o pai de v, atualizar menor_tempo[v]
             elif u != pai.get(v):
                 menor_tempo[v] = min(menor_tempo[v], tempo_descoberta[u])
 
-        # Iniciar DFS para todos os vértices não visitados
-    for v in range(grafo.num_vertices):
+    # Iniciar DFS para todos os vértices não visitados
+    for v in grafo.lista:  # Agora usamos as chaves do dicionário (vértices como strings)
         if v not in tempo_descoberta:
             dfs(v)
 
     return pontes
+
+
 
 def fleury(grafo):
     graus = [len(grafo.lista[v]) for v in range(grafo.num_vertices)]
