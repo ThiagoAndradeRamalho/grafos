@@ -2,22 +2,30 @@ from grafo import Grafo
 from manipulacao import *
 
 def main():
-    grafo = Grafo(False)
-    grafo.adicionar_vertice("s")
-    grafo.adicionar_vertice("a")
-    grafo.adicionar_vertice("b")
-    # grafo.adicionar_vertice("t")
-    grafo.adicionar_aresta('s','a', 'e1')
-    grafo.adicionar_aresta('b','a', 'e2')
-    
-    # grafo.remover_aresta(rotulo='e1')
-    #grafo.adicionar_aresta('a','s', 'e2')
-    # grafo.adicionar_aresta('s','a', 'e3')
-    grafo.adicionar_aresta('3','s', 'e5')
-    #grafo.adicionar_aresta('3','s', 'e4')
-    #grafo.exibir_lista()
 
-    salvar_grafo_gexf(grafo, 'TESTAOAc.gexf')
+    num_vertices = int(input("Digite o número de vértices para o grafo aleatório: "))
+    num_arestas = int(input("Digite o número de arestas para o grafo aleatório: "))
+    direcionado = input("O grafo é direcionado? (s/n): ").strip().lower() == "s"
+    grafo_aleatorio = gerar_grafo_aleatorio(num_vertices,num_arestas, direcionado)
+    grafo_aleatorio.exibir_lista()
+    grafo_aleatorio.exibir_matriz_adjacencia()
+
+    # grafo = Grafo(False)
+    # grafo.adicionar_vertice("s")
+    # grafo.adicionar_vertice("a")
+    # grafo.adicionar_vertice("b")
+    # # grafo.adicionar_vertice("t")
+    # grafo.adicionar_aresta('s','a', 'e1')
+    # grafo.adicionar_aresta('b','a', 'e2')
+    
+    # # grafo.remover_aresta(rotulo='e1')
+    # #grafo.adicionar_aresta('a','s', 'e2')
+    # # grafo.adicionar_aresta('s','a', 'e3')
+    # grafo.adicionar_aresta('3','s', 'e5')
+    # #grafo.adicionar_aresta('3','s', 'e4')
+    # #grafo.exibir_lista()
+
+    salvar_grafo_gexf(grafo_aleatorio, 'TESTAOaleatoriono.gexf')
     # grafo_carregado = carregar_grafo_gexf("ab.gexf")
     #grafo_carregado.exibir_lista()
     # try:
@@ -42,7 +50,7 @@ def main():
     # print(kosaraju(grafo))
     # print(naive(grafo))
     # print(tarjan(grafo))
-    print("Componentes conexos: ",numero_componentes_conexos(grafo))
+    # print("Componentes conexos: ",numero_componentes_conexos(grafo))
 
 
 

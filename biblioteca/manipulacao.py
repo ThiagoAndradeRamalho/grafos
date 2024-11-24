@@ -616,3 +616,48 @@ def carregar_grafo_gexf(nome_arquivo):
 
     print(f"Grafo carregado do arquivo '{nome_arquivo}'.")
     return grafo
+
+def gerar_numero_aleatorio(seed):
+    seed = (seed * 9301 + 49297) % 233280
+    return seed
+
+def gerar_grafo_aleatorio(num_vertices, num_arestas, direcionado=False):
+    grafo = Grafo(direcionado=direcionado)
+    seed = 123456  
+
+    # Adiciona vértices
+    for i in range(num_vertices):
+        rotulo_vertice = f"V{i}"  # rótulo único para cada vértice
+        grafo.adicionar_vertice(str(i), rotulo=rotulo_vertice)
+
+    max_arestas = num_vertices * (num_vertices - 1) 
+    if not direcionado:
+        max_arestas //= 2  # grafos não direcionados
+
+
+    num_arestas = min(num_arestas, max_arestas)
+
+    # Gera arestas aleatórias
+    arestas_adicionadas = set() 
+    while len(arestas_adicionadas) < num_arestas:
+        seed = gerar_numero_aleatorio(seed)
+        u = str(seed % num_vertices)  # escolhe um vértice aleatório
+        seed = gerar_numero_aleatorio(seed)
+        v = str(seed % num_vertices)  # escolhe outro vértice aleatório
+
+        # evita arestas de um vértice para ele mesmo (em grafos simples)
+        if u == v:
+            continue
+
+        # evita arestas duplicadas em grafos não direcionados
+        if not direcionado and (v, u) in arestas_adicionadas:
+            continue
+
+        # adiciona a aresta ao grafo
+        aresta = (u, v)
+        if aresta not in arestas_adicionadas:
+            arestas_adicionadas.add(aresta)
+            rotulo_aresta = f"A{u}{v}"  # rótulo único para a aresta
+            grafo.adicionar_aresta(u, v, rotulo=rotulo_aresta)
+
+    return grafo
