@@ -1,5 +1,8 @@
+# main.py
+
 from grafo import Grafo
 from manipulacao import *  # Supondo que esta função existe e tem verifica_conectividade
+
 
 def main():
     # Criação de um grafo direcionado com 7 vértices

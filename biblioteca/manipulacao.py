@@ -327,34 +327,35 @@ def fleury(grafo):
 
     return caminho
 
+
 def fleury_tarjan(grafo):
     # Identificar as pontes do grafo usando Tarjan
-    pontes = set(tarjan(grafo))  # Usar um conjunto para busca eficiente
-    graus = [len(grafo.lista[v]) for v in range(grafo.num_vertices)]
-    impares = [v for v in range(grafo.num_vertices) if graus[v] % 2 != 0]
+    pontes = set(tarjan(grafo))  # chama o tarjan p identificar as pontes, sao armazenadas em um conjunto set
+    graus = [len(grafo.lista[v]) for v in range(grafo.num_vertices)]  # calcula o grau de cada vertice, p cada vertice conta o num de arestas na sua lista de adjacencia
+    impares = [v for v in range(grafo.num_vertices) if graus[v] % 2 != 0] # identifica os vertices de grau impar
 
     # Verificar se o grafo é euleriano ou semi-euleriano
     if len(impares) > 2:
         return "O grafo não é euleriano."
 
-    caminho = []
-    vertice_atual = impares[0] if impares else 0
-    stack = [vertice_atual]
-    s = set()  # Conjunto para armazenar vértices visitados
+    caminho = [] # lista que armazenara o caminho euleriano encontrado
+    vertice_atual = impares[0] if impares else 0 # comeca em um vertice de grau impar se houver, senao comeca no vertice 0
+    stack = [vertice_atual] # pilha para armazenar os vertices durante a exploracao do caminho
+    s = set()  # conjunto para armazenar vértices visitados
 
-    while stack:
-        u = stack[-1]
-        s.add(u)  # Adiciona o vértice atual ao conjunto S
+    while stack:  # enquanto houver vertices na pilha o algoritmo continua a exploracao
+        u = stack[-1] # obtem o vertice no topo da pilha
+        s.add(u)  # adiciona o vértice atual ao conjunto S
 
         # Verificar as arestas disponíveis para escolher a próxima
-        arestas_disponiveis = [(u, v) for v in grafo.lista[u] if (u, v) not in pontes and (v, u) not in pontes]
-        
+        arestas_disponiveis = [(u, v) for v in grafo.lista[u] if (u, v) not in pontes and (v, u) not in pontes] # encontra as arestas disponíveis para sair do vertice atual, excluindo as pontes identificadas
+                
         # Se não houver arestas disponíveis que não sejam pontes, usar qualquer outra
-        if not arestas_disponiveis:
-            if grafo.lista[u]:
-                v = grafo.lista[u].pop()
+        if not arestas_disponiveis: 
+            if grafo.lista[u]: 
+                v = grafo.lista[u].pop() 
                 grafo.lista[v].remove(u)  # Remover a aresta simétrica
-                stack.append(v)
+                stack.append(v) 
             else:
                 caminho.append(stack.pop())
         else:
