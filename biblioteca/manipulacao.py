@@ -256,85 +256,6 @@ def busca_profundidade_componentes(grafo):
 
     return componentes
 
-def naive(grafo):
-    pontes = []
-    
-    # Criar o subgrafo subjacente se for direcionado
-    subjacente = subgrafo_subjacente(grafo) if grafo.direcionado else grafo
-
-    # Número inicial de componentes conexos
-    num_componentes = busca_profundidade_componentes(subjacente)
-    print("Componentes iniciais:", num_componentes)
-    
-    # Testar cada aresta
-    for u in grafo.lista.keys():
-        for v in grafo.lista[u]:
-            # Evitar dupla verificação para arestas não direcionadas
-            if grafo.direcionado or u < v:
-                # Remover a aresta e testar conectividade
-                subjacente.remover_aresta(u, v)
-                n = busca_profundidade_componentes(subjacente)
-                print(f"Sem a aresta ({u}, {v}):", n)
-                
-                # Se o número de componentes aumentou, é uma ponte
-                if n > num_componentes:
-                    pontes.append((u, v))
-                
-                # Restaurar a aresta
-                subjacente.adicionar_aresta(u, v)
-    
-    return pontes
-
-
-
-def fleury(grafo):
-    # Verificar número de vértices de grau ímpar
-    vertices_grau_impar = [u for u in range(grafo.num_vertices) if grafo.grau(u)[0] % 2 != 0]
-    print("Vértices com grau ímpar:", vertices_grau_impar)
-    
-    if len(vertices_grau_impar) > 2:
-        raise ValueError("O grafo não possui caminho euleriano (mais de dois vértices de grau ímpar).")
-
-    grafo_aux = grafo.duplicar_grafo()
-
-    # Escolhe o vértice inicial: se há vértices ímpares, comece por um deles; caso contrário, escolha o vértice 0
-    u = vertices_grau_impar[0] if vertices_grau_impar else 0
-
-    caminho = []  # Caminho Euleriano
-
-    while any(len(arestas) > 0 for arestas in grafo_aux.lista):  # Enquanto houver arestas no grafo
-        print(f"Vértice atual: {u}, Arestas disponíveis: {grafo_aux.lista[u]}")
-
-        arestas = grafo_aux.lista[u]
-
-        if not arestas:  # Se não houver mais arestas para este vértice
-            print(f"Vértice {u} sem arestas. Encerrando busca neste ramo.")
-            break
-
-        for v in arestas[:]:  # Iterar sobre uma cópia para evitar problemas durante modificações
-            print(f"Tentando a aresta ({u}, {v})")
-            grafo_aux.remover_aresta(u, v)  # Remove a aresta temporariamente
-
-            if busca_profundidade_componentes(grafo_aux) == 1 or len(arestas) == 1:  # Verifica conectividade
-                print(f"Aresta ({u}, {v}) removida. Atualizando caminho.")
-                caminho.append((u, v))
-                u = v  # Atualiza para o próximo vértice
-                break
-            else:
-                # Se a remoção desconectou o grafo, restaura a aresta
-                grafo_aux.adicionar_aresta(u, v)
-
-        else:  # Se todas as arestas disponíveis forem pontes
-            v = arestas[0]
-            grafo_aux.remover_aresta(u, v)
-            print(f"Todas as arestas são pontes. Removendo ({u}, {v}).")
-            caminho.append((u, v))
-            u = v  # Atualiza para o próximo vértice
-
-        print(f"Caminho até agora: {caminho}")
-
-    print(f"Caminho euleriano encontrado: {caminho}")
-    return caminho
 
 def dfs(grafo, v, visitado):
     visitado[v] = True
@@ -484,6 +405,83 @@ def tarjan(grafo):
 
     return pontes
 
+def naive(grafo):
+    pontes = []
+    
+    # Criar o subgrafo subjacente se for direcionado
+    subjacente = subgrafo_subjacente(grafo) if grafo.direcionado else grafo
+
+    # Número inicial de componentes conexos
+    num_componentes = busca_profundidade_componentes(subjacente)
+    print("Componentes iniciais:", num_componentes)
+    
+    # Testar cada aresta
+    for u in grafo.lista.keys():
+        for v in grafo.lista[u]:
+            # Evitar dupla verificação para arestas não direcionadas
+            if grafo.direcionado or u < v:
+                # Remover a aresta e testar conectividade
+                subjacente.remover_aresta(u, v)
+                n = busca_profundidade_componentes(subjacente)
+                print(f"Sem a aresta ({u}, {v}):", n)
+                
+                # Se o número de componentes aumentou, é uma ponte
+                if n > num_componentes:
+                    pontes.append((u, v))
+                
+                # Restaurar a aresta
+                subjacente.adicionar_aresta(u, v)
+    
+    return pontes
+
+def fleury(grafo):
+    # Verificar número de vértices de grau ímpar
+    vertices_grau_impar = [u for u in range(grafo.num_vertices) if grafo.grau(u)[0] % 2 != 0]
+    print("Vértices com grau ímpar:", vertices_grau_impar)
+    
+    if len(vertices_grau_impar) > 2:
+        raise ValueError("O grafo não possui caminho euleriano (mais de dois vértices de grau ímpar).")
+
+    grafo_aux = grafo.duplicar_grafo()
+
+    # Escolhe o vértice inicial: se há vértices ímpares, comece por um deles; caso contrário, escolha o vértice 0
+    u = vertices_grau_impar[0] if vertices_grau_impar else 0
+
+    caminho = []  # Caminho Euleriano
+
+    while any(len(arestas) > 0 for arestas in grafo_aux.lista):  # Enquanto houver arestas no grafo
+        print(f"Vértice atual: {u}, Arestas disponíveis: {grafo_aux.lista[u]}")
+
+        arestas = grafo_aux.lista[u]
+
+        if not arestas:  # Se não houver mais arestas para este vértice
+            print(f"Vértice {u} sem arestas. Encerrando busca neste ramo.")
+            break
+
+        for v in arestas[:]:  # Iterar sobre uma cópia para evitar problemas durante modificações
+            print(f"Tentando a aresta ({u}, {v})")
+            grafo_aux.remover_aresta(u, v)  # Remove a aresta temporariamente
+
+            if busca_profundidade_componentes(grafo_aux) == 1 or len(arestas) == 1:  # Verifica conectividade
+                print(f"Aresta ({u}, {v}) removida. Atualizando caminho.")
+                caminho.append((u, v))
+                u = v  # Atualiza para o próximo vértice
+                break
+            else:
+                # Se a remoção desconectou o grafo, restaura a aresta
+                grafo_aux.adicionar_aresta(u, v)
+
+        else:  # Se todas as arestas disponíveis forem pontes
+            v = arestas[0]
+            grafo_aux.remover_aresta(u, v)
+            print(f"Todas as arestas são pontes. Removendo ({u}, {v}).")
+            caminho.append((u, v))
+            u = v  # Atualiza para o próximo vértice
+
+        print(f"Caminho até agora: {caminho}")
+
+    print(f"Caminho euleriano encontrado: {caminho}")
+    return caminho
 
 
 def fleury(grafo):
@@ -507,34 +505,35 @@ def fleury(grafo):
 
     return caminho
 
+# Fleury com Tarjan
 def fleury_modificado(grafo):
     # Identificar as pontes do grafo usando Tarjan
-    pontes = set(tarjan(grafo))  # Usar um conjunto para busca eficiente
-    graus = [len(grafo.lista[v]) for v in range(grafo.num_vertices)]
-    impares = [v for v in range(grafo.num_vertices) if graus[v] % 2 != 0]
+    pontes = set(tarjan(grafo))  # chama o tarjan p identificar as pontes, sao armazenadas em um conjunto set
+    graus = [len(grafo.lista[v]) for v in range(grafo.num_vertices)]  # calcula o grau de cada vertice, p cada vertice conta o num de arestas na sua lista de adjacencia
+    impares = [v for v in range(grafo.num_vertices) if graus[v] % 2 != 0] # identifica os vertices de grau impar
 
     # Verificar se o grafo é euleriano ou semi-euleriano
     if len(impares) > 2:
         return "O grafo não é euleriano."
 
-    caminho = []
-    vertice_atual = impares[0] if impares else 0
-    stack = [vertice_atual]
-    s = set()  # Conjunto para armazenar vértices visitados
+    caminho = [] # lista que armazenara o caminho euleriano encontrado
+    vertice_atual = impares[0] if impares else 0 # comeca em um vertice de grau impar se houver, senao comeca no vertice 0
+    stack = [vertice_atual] # pilha para armazenar os vertices durante a exploracao do caminho
+    s = set()  # conjunto para armazenar vértices visitados
 
-    while stack:
-        u = stack[-1]
-        s.add(u)  # Adiciona o vértice atual ao conjunto S
+    while stack:  # enquanto houver vertices na pilha o algoritmo continua a exploracao
+        u = stack[-1] # obtem o vertice no topo da pilha
+        s.add(u)  # adiciona o vértice atual ao conjunto S
 
         # Verificar as arestas disponíveis para escolher a próxima
-        arestas_disponiveis = [(u, v) for v in grafo.lista[u] if (u, v) not in pontes and (v, u) not in pontes]
-        
+        arestas_disponiveis = [(u, v) for v in grafo.lista[u] if (u, v) not in pontes and (v, u) not in pontes] # encontra as arestas disponíveis para sair do vertice atual, excluindo as pontes identificadas
+                
         # Se não houver arestas disponíveis que não sejam pontes, usar qualquer outra
-        if not arestas_disponiveis:
-            if grafo.lista[u]:
-                v = grafo.lista[u].pop()
+        if not arestas_disponiveis: 
+            if grafo.lista[u]: 
+                v = grafo.lista[u].pop() 
                 grafo.lista[v].remove(u)  # Remover a aresta simétrica
-                stack.append(v)
+                stack.append(v) 
             else:
                 caminho.append(stack.pop())
         else:
