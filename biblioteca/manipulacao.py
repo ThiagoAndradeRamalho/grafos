@@ -217,12 +217,10 @@ def verifica_conectividade(grafo):
 
 
 def isAlcancavel(grafo, origem, destino):
-    """
-    Verifica se é possível alcançar `destino` a partir de `origem`.
-    """
+
     num_vertices = len(grafo.lista)
     TD = [-1] * num_vertices  # Tempo de descoberta
-    TT = [-1] * num_vertices  # Tempo de término
+    TT = [-1] * num_vertices 
     pai = [None] * num_vertices
     ordem_visitados = []
     encontrado = [False]
@@ -287,7 +285,7 @@ def naive(grafo):
 
 
 
-def fleury(grafo):
+def fleury_naive(grafo):
     # Verificar número de vértices de grau ímpar
     vertices_grau_impar = [u for u in range(grafo.num_vertices) if grafo.grau(u)[0] % 2 != 0]
     print("Vértices com grau ímpar:", vertices_grau_impar)
@@ -507,7 +505,7 @@ def fleury(grafo):
 
     return caminho
 
-def fleury_modificado(grafo):
+def fleury_tarjan(grafo):
     # Identificar as pontes do grafo usando Tarjan
     pontes = set(tarjan(grafo))  # Usar um conjunto para busca eficiente
     graus = [len(grafo.lista[v]) for v in range(grafo.num_vertices)]

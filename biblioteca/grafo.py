@@ -153,7 +153,7 @@ class Grafo:
             print(f"As arestas '{aresta1}' e '{aresta2}' não são adjacentes.")
             return False
 
-    def checagem_de_aresta(self, origem, destino):
+    def checagem_aresta(self, origem, destino):
         return origem in self.lista and destino in self.lista[origem]
 
     def grau_do_vertice(self, vertice):
