@@ -62,7 +62,7 @@ class Grafo:
         print("Matriz de Incidência:")
 
         arestas_rotuladas = [self.rotulos_arestas.get((u, v), f"{u}-{v}") for (u, v) in arestas]
-        print("   " + "  ".join(arestas_rotuladas))
+        print("   " + "  ".join(arestas_rotuladas))  
 
         for i, linha in enumerate(self.matriz_incidencia):
             vertice = list(self.lista.keys())[i]
@@ -76,16 +76,52 @@ class Grafo:
         self.num_vertices += 1
         print(f"Vértice '{vertice}' adicionado.")
         
-    def remover_vertice(self, vertice):
-        if vertice in self.lista:
-            del self.lista[vertice]
-            self.num_vertices -= 1
-            for v in self.lista:
-                if vertice in self.lista[v]:
-                    self.lista[v].remove(vertice)
-            print(f"Vértice '{vertice}' removido.")
+    def remover_vertice(self, rotulo=None):
+            vertice = self.obter_vertice_por_rotulo(rotulo) if rotulo else None
+            if vertice is None:
+                print(f"Erro: Vértice com rótulo '{rotulo}' não encontrado.")
+                return
+            
+            if vertice in self.lista:
+                adjacentes = list(self.lista[vertice])  
+                for v in adjacentes:
+                    self.remover_aresta(self.rotulos_arestas.get((vertice, v), None) or self.rotulos_arestas.get((v, vertice), None))
+               
+                del self.lista[vertice]
+                self.num_vertices -= 1
+                for v in self.lista:
+                    if vertice in self.lista[v]:
+                        self.lista[v].remove(vertice)
+                print(f"Vértice removido.")
+            else:
+                print(f"Vértice não existe.")
+
+    def remover_aresta(self, rotulo):
+        aresta = self.obter_aresta_por_rotulo(rotulo)
+        if aresta is None:
+            print(f"Erro: Aresta com rótulo '{rotulo}' não encontrada.")
+            return
+
+        u, v = aresta
+        if v in self.lista[u]:
+            self.lista[u].remove(v)
+            if not self.direcionado:
+                self.lista[v].remove(u)
+            print(f"Aresta removida.")
         else:
-            print(f"Vértice '{vertice}' não existe.")
+            print(f"Aresta não existe.")
+        
+    def obter_vertice_por_rotulo(self, rotulo):
+        for vertice, r in self.rotulos_vertices.items():
+            if r == rotulo:
+                return vertice
+        return None
+        
+    def obter_vertice_por_rotulo(self, rotulo):
+        for vertice, r in self.rotulos_vertices.items():
+            if r == rotulo:
+                return vertice
+        return None
 
     def obter_vertice_por_rotulo(self, rotulo):
         for vertice, r in self.rotulos_vertices.items():
@@ -164,15 +200,6 @@ class Grafo:
         self.rotulos_vertices[vertice] = rotulo
         print(f"Vértice '{vertice}' rotulado como '{rotulo}'.")
 
-    def obter_vertice_por_rotulo(self, rotulo):
-        for vertice, r in self.rotulos_vertices.items():
-            if r == rotulo:
-                return vertice
-        return None
-
-    def obter_rotulo_vertice(self, vertice):
-        return self.rotulos_vertices.get(vertice)
-
     def rotular_aresta(self, u, v, rotulo):
         if (u, v) in self.rotulos_arestas or (v, u) in self.rotulos_arestas:
             self.rotulos_arestas[(u, v)] = rotulo
@@ -181,12 +208,40 @@ class Grafo:
             print(f"Aresta entre '{u}' e '{v}' não existe.")
 
     def ponderar_vertice(self, vertice, peso):
-        self.pesos_vertices[vertice] = peso
-        print(f"Vértice '{vertice}' ponderado com peso {peso}.")
+            self.pesos_vertices[vertice] = peso
+            print(f"Vértice '{vertice}' ponderado com peso {peso}.")
 
-    def ponderar_aresta(self, u, v, peso):
-        if (u, v) in self.lista or (v, u) in self.lista:
-            self.pesos_arestas[(u, v)] = peso
-            print(f"Aresta '{u}-{v}' ponderada com peso {peso}.")
+    def obter_aresta_por_rotulo(self, rotulo):
+        for (u, v), r in self.rotulos_arestas.items():
+            if r == rotulo:
+                return u, v
+        print(f"Aresta com rótulo '{rotulo}' não encontrada.")
+        return None
+
+    def ponderar_aresta(self, rotulo, peso):
+        aresta = self.obter_aresta_por_rotulo(rotulo)
+        
+        if aresta is not None:
+            u, v = aresta
+            
+            if v in self.lista[u]:
+                if not self.direcionado:
+                    self.pesos_arestas[(u, v)] = peso
+                    self.pesos_arestas[(v, u)] = peso
+                else:
+                    self.pesos_arestas[(u, v)] = peso
+                print(f"Aresta entre '{u}' e '{v}' ponderada com peso {peso}.")
+            else:
+                print(f"Aresta entre '{u}' e '{v}' não existe. Não é possível atribuir peso.")
         else:
-            print(f"Aresta entre '{u}' e '{v}' não existe.")
+            print(f"Aresta com rótulo '{rotulo}' não encontrada.")
+
+    def existe_aresta(self, rotulo_origem, rotulo_destino):
+        """ Verifica se existe uma aresta de 'origem' para 'destino' usando rótulos """
+        origem = self.rotulos_vertices.get(rotulo_origem)
+        destino = self.rotulos_vertices.get(rotulo_destino)
+
+        if origem and destino:
+            if origem in self.lista:
+                return destino in self.lista[origem]
+        return False
