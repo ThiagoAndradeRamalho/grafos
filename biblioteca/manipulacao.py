@@ -176,7 +176,6 @@ def naive(grafo):
     # Número inicial de componentes conexos
     num_componentes = busca_profundidade_componentes(subjacente)
     print("Componentes iniciais:", num_componentes)
-    
     # Testar cada aresta
     for u in grafo.lista.keys():
         for v in grafo.lista[u]:

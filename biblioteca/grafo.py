@@ -2,7 +2,7 @@ class Grafo:
     def __init__(self, direcionado=False, num_vertices=0):
         self.direcionado = direcionado
         self.lista = {}
-        self.rotulos_vertices = {}
+        # self.rotulos_vertices = {}
         self.pesos_vertices = {}
         self.rotulos_arestas = {}
         self.pesos_arestas = {}
@@ -16,8 +16,8 @@ class Grafo:
     
     def exibir_lista(self):
         print("Lista de Adjacência:")
-        for vertice, adjacentes in self.lista.items():
-            rotulo_vertice = self.rotulos_vertices.get(vertice, vertice)
+        for vertice in self.lista.items():
+            # rotulo_vertice = self.rotulos_vertices.get(vertice, vertice)
             adjacentes_rotulados = [self.rotulos_vertices.get(v, v) for v in adjacentes]
             print(f"{rotulo_vertice}: {', '.join(adjacentes_rotulados)}")
 
@@ -72,7 +72,7 @@ class Grafo:
     def adicionar_vertice(self, rotulo=None):
         vertice = str(self.num_vertices)
         self.lista[vertice] = []
-        self.rotulos_vertices[vertice] = rotulo if rotulo else "sem rótulo"
+        # self.rotulos_vertices[vertice] = rotulo if rotulo else "sem rótulo"
         self.num_vertices += 1
         print(f"Vértice '{vertice}' adicionado.")
         
