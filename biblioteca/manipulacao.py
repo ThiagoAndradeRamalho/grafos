@@ -1,5 +1,4 @@
 from grafo import Grafo
-
 rotulos_vertices = {}
 rotulos_arestas = {}
 pesos_vertices = {}
@@ -547,3 +546,73 @@ def fleury_modificado(grafo):
 
     return caminho
 
+
+def salvar_grafo_gexf(grafo, nome_arquivo):
+    pasta = "arquivos"
+
+    # Verifica se a pasta "arquivos" está no caminho, se não, ajusta o nome do arquivo
+    if not nome_arquivo.startswith(pasta):
+        nome_arquivo = pasta + "/" + nome_arquivo
+
+    try:
+        # Abre o arquivo no modo de escrita e salva os dados
+        with open(nome_arquivo, "w", encoding="utf-8") as arquivo:
+            arquivo.write('<?xml version="1.0" encoding="UTF-8"?>\n')
+            arquivo.write('<gexf xmlns="http://www.gexf.net/1.2draft" version="1.2">\n')
+            arquivo.write('  <graph mode="static" defaultedgetype="{}">\n'.format(
+                "directed" if grafo.direcionado else "undirected"))
+            arquivo.write('    <nodes>\n')
+
+            # Escreve os vértices
+            for vertice in grafo.lista:
+                arquivo.write(f'      <node id="{vertice}" label="{vertice}"/>\n')
+
+            arquivo.write('    </nodes>\n')
+            arquivo.write('    <edges>\n')
+
+            # Escreve as arestas
+            edge_id = 0
+            for u, adjacentes in grafo.lista.items():
+                for v in adjacentes:
+                    # Evita duplicação para grafos não direcionados
+                    if not grafo.direcionado and (v, u) in grafo.rotulos_arestas:
+                        continue
+
+                    rotulo = grafo.rotulos_arestas.get((u, v), "sem rótulo")
+                    arquivo.write(f'      <edge id="{edge_id}" source="{u}" target="{v}" label="{rotulo}"/>\n')
+                    edge_id += 1
+
+            arquivo.write('    </edges>\n')
+            arquivo.write('  </graph>\n')
+            arquivo.write('</gexf>\n')
+
+        print(f"Grafo salvo no arquivo '{nome_arquivo}'.")
+
+    except Exception as e:
+        print(f"Erro ao salvar o grafo: {e}")
+
+
+
+
+
+def carregar_grafo_gexf(nome_arquivo):
+
+    with open(nome_arquivo, "r", encoding="utf-8") as arquivo:
+        linhas = arquivo.readlines()
+
+    grafo = Grafo(direcionado=any('defaultedgetype="directed"' in linha for linha in linhas))
+
+    for linha in linhas:
+        linha = linha.strip()
+        if linha.startswith("<node"):
+            vertice_id = linha.split('id="')[1].split('"')[0]
+            rotulo = linha.split('label="')[1].split('"')[0] if 'label="' in linha else "sem rótulo"
+            grafo.adicionar_vertice(vertice_id, rotulo)
+        elif linha.startswith("<edge"):
+            origem = linha.split('source="')[1].split('"')[0]
+            destino = linha.split('target="')[1].split('"')[0]
+            rotulo = linha.split('label="')[1].split('"')[0] if 'label="' in linha else None
+            grafo.adicionar_aresta(origem, destino, rotulo)
+
+    print(f"Grafo carregado do arquivo '{nome_arquivo}'.")
+    return grafo

@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<gexf xmlns="http://www.gexf.net/1.2draft" version="1.2">
+  <graph mode="static" defaultedgetype="undirected">
+    <nodes>
+      <node id="s" label="s"/>
+      <node id="a" label="a"/>
+      <node id="b" label="b"/>
+      <node id="3" label="3"/>
+    </nodes>
+    <edges>
+      <edge id="0" source="s" target="a" label="e1"/>
+      <edge id="1" source="b" target="a" label="e2"/>
+      <edge id="2" source="3" target="s" label="e5"/>
+    </edges>
+  </graph>
+</gexf>

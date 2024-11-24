@@ -2,21 +2,32 @@ from grafo import Grafo
 from manipulacao import *
 
 def main():
-    grafo = Grafo(True)
+    grafo = Grafo(False)
     grafo.adicionar_vertice("s")
     grafo.adicionar_vertice("a")
-    grafo.adicionar_vertice("3")
+    grafo.adicionar_vertice("b")
     # grafo.adicionar_vertice("t")
     grafo.adicionar_aresta('s','a', 'e1')
-    grafo.exibir_lista()
-    grafo.remover_aresta(rotulo='e1')
-    grafo.adicionar_aresta('a','s', 'e2')
+    grafo.adicionar_aresta('b','a', 'e2')
+    
+    # grafo.remover_aresta(rotulo='e1')
+    #grafo.adicionar_aresta('a','s', 'e2')
     # grafo.adicionar_aresta('s','a', 'e3')
-    # grafo.adicionar_aresta('3','s', 'e5')
-    grafo.adicionar_aresta('3','s', 'e4')
+    grafo.adicionar_aresta('3','s', 'e5')
+    #grafo.adicionar_aresta('3','s', 'e4')
+    #grafo.exibir_lista()
 
-    grafo.exibir_lista()
-    # grafo.exibir_matriz_adjacencia()
+    salvar_grafo_gexf(grafo, 'TESTAOAc.gexf')
+    # grafo_carregado = carregar_grafo_gexf("ab.gexf")
+    #grafo_carregado.exibir_lista()
+    # try:
+    #     nome_arquivo = "aa.gexf"
+    #     grafo_importado = importar_de_gexf(nome_arquivo)  # Chamada correta do @classmethod
+    #     print("Grafo importado com sucesso!")
+    #     grafo_importado.exibir_lista()  # Exibe a lista de adjacência do grafo importado
+    # except Exception as e:
+    #     print(f"Erro ao importar o grafo: {e}")
+    # grafo.exibir_matriz_adjacencia()  
     # grafo.exibir_matriz_incidencia()
     # grafo.checar_adjacencia_vertices('a','s')
     # grafo.checar_adjacencia_arestas("e2", 'e3')
