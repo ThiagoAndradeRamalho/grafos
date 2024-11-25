@@ -14,17 +14,19 @@ def main():
 
     # grafo.adicionar_vertice("s")
     # grafo.adicionar_vertice("a")
-    # grafo.adicionar_vertice("b")
-    # grafo.adicionar_vertice("t")
+    # # grafo.adicionar_vertice("b")
+    # # grafo.adicionar_vertice("t")
     # grafo.adicionar_aresta('s','a', 'e1')
     # grafo.adicionar_aresta('b','a', 'e2')
     
-    # # grafo.remover_aresta(rotulo='e1')
+    # grafo.remover_aresta(rotulo='e1')
     # grafo.adicionar_aresta('a','s', 'e2')
     # grafo.adicionar_aresta('s','a', 'e3')
     # grafo.adicionar_aresta('3','s', 'e5')
     # grafo.adicionar_aresta('3','s', 'e4')
     # grafo.exibir_lista()
+
+    # print(verifica_conectividade(grafo))
 
     # grafo.exibir_matriz_adjacencia()
 
@@ -103,6 +105,7 @@ def menu():
     print("22 - Exibir vértices")
     print("23 - Exibir arestas")
     print("24 - Buscar em Profundidade (DFS)")
+    print("26 - Importar arquivo")
     print("25 - Adicionar vertice")
     print("0 - Encerrar")
 
@@ -258,9 +261,17 @@ def main():
 
 
         elif opcao == '21':  
-            formato = input("Digite o formato de exportação (e.g., GEXF, GDF, GML): ")
-            grafo.exportar_gephi(formato)
-            print(f"Grafo exportado em formato {formato}.")
+            nome_arquivo = input("Digite o nome do arquivo (com extensão .gexf): ").strip()
+            salvar_grafo_gexf(grafo, nome_arquivo)
+
+        elif opcao == '26':  
+            nome_arquivo = input("Digite o nome do arquivo GEXF para carregar: ").strip()
+            try:
+                grafo_carregado = carregar_grafo_gexf(nome_arquivo)
+                grafo_carregado.exibir_lista() 
+                print(f"Grafo carregado com sucesso a partir de {nome_arquivo}.")
+            except Exception as e:
+                print(f"Erro ao carregar o grafo: {e}")
             
         elif opcao == '22':
             exibir_vertices(grafo)

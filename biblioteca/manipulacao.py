@@ -157,15 +157,8 @@ def subgrafo_subjacente(grafo):
 
 
 def verifica_conectividade(grafo):
-    """
-    Verifica o nível de conectividade de um grafo:
-    - Simplesmente conexo (S-Conexo)
-    - Semifortemente conexo (SF-Conexo)
-    - Fortemente conexo (F-Conexo)
-    """
 
-    # Verifica se o grafo é simplesmente conexo
-    grafo_subjacente = subgrafo_subjacente(grafo)  # Subgrafo ignorando a direção das arestas
+    grafo_subjacente = subgrafo_subjacente(grafo) 
     componentes = busca_profundidade_componentes(grafo_subjacente)
 
     if componentes == 1:
@@ -174,7 +167,6 @@ def verifica_conectividade(grafo):
         print(f"O grafo não é simplesmente conexo. Ele possui {componentes} componentes.")
         return "Não Conexo"
 
-    # Verifica se o grafo é semifortemente conexo
     num_vertices = len(grafo.lista)
     for u in grafo.lista:
         for v in grafo.lista:
@@ -185,7 +177,6 @@ def verifica_conectividade(grafo):
 
     print("O grafo é semifortemente conexo (SF-Conexo).")
 
-    # Verifica se o grafo é fortemente conexo
     for u in grafo.lista:
         for v in grafo.lista:
             if u != v:
@@ -199,9 +190,7 @@ def verifica_conectividade(grafo):
 
 
 def isAlcancavel(grafo, origem, destino):
-    """
-    Verifica se é possível alcançar `destino` a partir de `origem`.
-    """
+
     num_vertices = len(grafo.lista)
     TD = [-1] * num_vertices  # Tempo de descoberta
     TT = [-1] * num_vertices  # Tempo de término
@@ -214,15 +203,11 @@ def isAlcancavel(grafo, origem, destino):
 
 
 def busca_profundidade_componentes(grafo):
-    """
-    Retorna o número de componentes conectados em um grafo.
-    """
+
     visitados = set()
 
     def dfs(v):
-        """
-        Realiza a busca em profundidade a partir de um vértice.
-        """
+
         visitados.add(v)
         for vizinho in grafo.lista.get(v, []):
             if vizinho not in visitados:
