@@ -18,7 +18,16 @@ class Grafo:
         print("Lista de Adjacência:")
         for vertice, adjacentes in self.lista.items():
             rotulo_vertice = self.rotulos_vertices.get(vertice, vertice)
-            adjacentes_rotulados = [self.rotulos_vertices.get(v, v) for v in adjacentes]
+            adjacentes_rotulados = []
+            
+            for v in adjacentes:
+                if isinstance(v, tuple):  # Verifica se o item é uma tupla (vértice, identificador)
+                    rotulo_adjacente = self.rotulos_vertices.get(v[0], v[0])  # v[0] é o vértice
+                else:
+                    rotulo_adjacente = self.rotulos_vertices.get(v, v)  # Caso simples, apenas o vértice
+
+                adjacentes_rotulados.append(rotulo_adjacente)
+            
             print(f"{rotulo_vertice}: {', '.join(adjacentes_rotulados)}")
 
     def exibir_matriz_adjacencia(self, direcionado=True):
@@ -144,32 +153,35 @@ class Grafo:
                 return vertice
         return None
 
-    def adicionar_aresta(self, u, v, rotulo=None):
-        if u not in self.lista and u not in self.rotulos_vertices:
-            u = self.obter_vertice_por_rotulo(u)
-        if v not in self.lista and v not in self.rotulos_vertices:
-            v = self.obter_vertice_por_rotulo(v)
-        
-        if u not in self.lista or v not in self.lista:
-            print(f"Erro: Vértice '{u}' ou '{v}' não existe. Aresta não pode ser adicionada.")
+    def adicionar_aresta(self, rotulo_vertice1, rotulo_vertice2, identificador):
+        # Obtendo os índices dos vértices por seus rótulos
+        vertice1 = self.obter_vertice_por_rotulo(rotulo_vertice1)
+        vertice2 = self.obter_vertice_por_rotulo(rotulo_vertice2)
+
+        if vertice1 is None or vertice2 is None:
+            print(f"Erro: Um ou ambos os vértices não existem.")
             return
+
+        # Verificando se a aresta é um laço
+        if vertice1 == vertice2:
+            print(f"Erro: Não é permitido laços (arestas de um vértice para ele mesmo).")
+            return
+
+        # Ordenando os vértices para evitar duplicação em grafos não direcionados
+        if vertice1 > vertice2:
+            vertice1, vertice2 = vertice2, vertice1
+
+        # Verificando se já existe uma aresta entre vertice1 e vertice2
+        for aresta in self.lista[vertice1]:
+            if aresta[0] == vertice2:  # Se já existe uma aresta entre vertice1 e vertice2
+                print(f"Aresta entre '{vertice1}' e '{vertice2}' já existe.")
+                return
+
+        # Se não existir, adiciona a aresta
+        self.lista[vertice1].append((vertice2, identificador))
+        self.lista[vertice2].append((vertice1, identificador))  # Para grafos não direcionados
+        print(f"Aresta entre '{vertice1}' e '{vertice2}' com identificador '{identificador}' adicionada.")
         
-        if v not in self.lista[u]:
-            self.lista[u].append(v)
-            if not self.direcionado:
-                self.lista[v].append(u)
-
-            if rotulo:
-                self.rotulos_arestas[(u, v)] = rotulo
-                if u not in self.rotulos_vertices:
-                    self.rotulos_vertices[u] = rotulo
-                if v not in self.rotulos_vertices:
-                    self.rotulos_vertices[v] = rotulo
-
-            print(f"Aresta adicionada entre '{u}' e '{v}' com rótulo '{rotulo}'.")
-        else:
-            print(f"Aresta entre '{u}' e '{v}' já existe.")
-            
     def checar_adjacencia_vertices(self, u, v):
         if u in self.lista and v in self.lista[u]:
             print(f"Existe uma aresta entre '{u}' e '{v}'.")
