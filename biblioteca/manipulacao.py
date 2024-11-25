@@ -128,7 +128,7 @@ def naive(grafo):
     for u in grafo.lista.keys():
         for v in grafo.lista[u]:
             if grafo.direcionado or u < v:
-                subjacente.remover_aresta_por_vertices(u, v)
+                subjacente.remover_aresta(u, v)
                 n = busca_profundidade_componentes(subjacente)
                 print(f"Sem a aresta ({u}, {v}):", n)
                 
@@ -142,6 +142,9 @@ def naive(grafo):
 def fleury_naive(grafo):
     # Inicializar o caminho e o conjunto de arestas visitadas
     caminho = []
+
+    if(grafo.direcionado == False):
+        return "O grafo é direcionado"
     
     # Criar o subgrafo subjacente se for direcionado
     subjacente = subgrafo_subjacente(grafo)
