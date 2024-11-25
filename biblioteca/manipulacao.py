@@ -105,17 +105,21 @@ def busca_profundidade_componentes(grafo):
     return componentes
 
 def subgrafo_subjacente(grafo):
-    subjacente = Grafo(direcionado=grafo.direcionado)
-
-    for vertice in grafo.lista.keys():
-        subjacente.adicionar_vertice(vertice)
-
-    for origem, destinos in grafo.lista.items():
-        for destino in destinos:
-            if not subjacente.existe_aresta(origem, destino) and not subjacente.existe_aresta(destino, origem):
-                subjacente.adicionar_aresta(origem, destino)
+    # Criar um novo grafo não direcionado que será o subgrafo subjacente
+    subgrafo = Grafo(direcionado=False)
     
-    return subjacente
+    # Copiar os vértices do grafo original para o subgrafo
+    for vertice in grafo.lista.keys():
+        subgrafo.adicionar_vertice(grafo.rotulos_vertices.get(vertice, vertice))
+    
+    # Adicionar as arestas ao subgrafo, ignorando a direção
+    for u in grafo.lista:
+        for v in grafo.lista[u]:
+            if v not in subgrafo.lista[u]:  # Evitar duplicação de arestas
+                subgrafo.adicionar_aresta(u, v, grafo.rotulos_arestas.get((u, v), None))
+    
+    return subgrafo
+
 
 def naive(grafo):
     pontes = []
