@@ -1,51 +1,171 @@
 from grafo import Grafo
+rotulos_vertices = {}
+rotulos_arestas = {}
+pesos_vertices = {}
+pesos_arestas = {}
 
-def quantidade_arestas(grafo):
-    total_arestas = 0
-    for vertice in grafo.lista:
-        total_arestas += len(grafo.lista[vertice])
 
-    if not grafo.direcionado:
-        total_arestas //= 2
+def rotular_vertice(grafo, vertice, rotulo):
+    if grafo not in rotulos_vertices:
+        rotulos_vertices[grafo] = {}
+    rotulos_vertices[grafo][rotulo] = vertice
+
+
+def obter_vertice_por_rotulo(grafo, rotulo):
+    return rotulos_vertices.get(grafo, {}).get(rotulo)
+
+
+def obter_rotulo_vertice(grafo, vertice):
+    for rotulo, v in rotulos_vertices.get(grafo, {}).items():
+        if v == vertice:
+            return rotulo
+    return None
+
+
+def rotular_aresta(grafo, u_rotulo, v_rotulo, rotulo):
+    u = obter_vertice_por_rotulo(grafo, u_rotulo)
+    v = obter_vertice_por_rotulo(grafo, v_rotulo)
+    if u is not None and v is not None:
+        if grafo not in rotulos_arestas:
+            rotulos_arestas[grafo] = {}
+        rotulos_arestas[grafo][(u, v)] = rotulo
+
+def exibir_vertices(grafo):
+    print(f"Vértices do grafo ({grafo.num_vertices} no total):")
+    for vertice in grafo.lista.keys():
+        # Obter o rótulo e o peso, se existirem
+        rotulo = grafo.rotulos_vertices.get(vertice, "sem rótulo")
+        peso = grafo.pesos_vertices.get(vertice, "sem peso")
+        print(f"Vértice '{vertice}' (Rótulo: {rotulo}, Peso: {peso})")
+
+def exibir_arestas(grafo):
+    if not grafo.lista:
+        print("Não há arestas no grafo.")
+        return
     
-    return total_arestas
+    print("Arestas do grafo:")
+    for origem, destinos in grafo.lista.items():
+        for destino in destinos:
+            rotulo = grafo.rotulos_arestas.get((origem, destino), "sem rótulo")
+            peso = grafo.pesos_arestas.get((origem, destino), "sem peso")
+            print(f"Aresta ({origem} -> {destino}) [Rótulo: {rotulo}, Peso: {peso}]")
+
+
+
+def existe_aresta(grafo, u_rotulo, v_rotulo):
+    u = obter_vertice_por_rotulo(grafo, u_rotulo)
+    v = obter_vertice_por_rotulo(grafo, v_rotulo)
+    return u is not None and v is not None and v in grafo.lista[u]
+
 
 def quantidade_vertices(grafo):
-    return len(grafo.lista)
+    return grafo.num_vertices
+
+def quantidade_arestas(self):
+    num_arestas = 0
+    
+    for u in self.lista:
+        num_arestas += len(self.lista[u])
+    
+    if not self.direcionado:
+        num_arestas //= 2
+    
+    print(f"Total de arestas: {num_arestas}")
+    return num_arestas
 
 def grafo_vazio(grafo):
     return quantidade_arestas(grafo) == 0
 
 def grafo_completo(grafo):
     n = len(grafo.lista)  
+    # verifica se cada vertice ta conectado a todos os outros vertices
     return all(len(grafo.lista[v]) == n - 1 for v in grafo.lista)
+    
+
+def busca_profundidade(grafo):
+    num_vertices = quantidade_vertices(grafo)
+    TD = [0] * num_vertices  
+    TT = [0] * num_vertices  
+    pai = [None] * num_vertices 
+    t = 0  
+    ordem_visitados = []  
+    componentes = 0  
+
+    for u in range(num_vertices):
+        if TD[u] == 0:  
+            componentes += 1  
+            # print(f"Nova árvore DFS iniciada no vértice {u}")
+            t = _dfs(grafo, u, TD, TT, pai, t, ordem_visitados)
+
+    if componentes == 1:
+        print("O grafo é conexo.")
+    else:
+        print(f"O grafo não é conexo. Ele tem {componentes} componentes conectados.")
+
+    # print("Tempo de Descoberta: ", TD)
+    # print("Tempo de Término: ", TT)
+    # print("Predecessores: ", pai)
+    # print("Ordem de visitação dos vértices:", ordem_visitados)
+
+    return componentes
 
 def _dfs(grafo, origem, TD, TT, pai, t, ordem_visitados, destino=None, encontrado=None):
+    """
+    Função auxiliar para realizar DFS. Agora funciona com vértices nomeados.
+    """
     mapa = grafo.mapear_vertices_para_indices()
-    u = mapa[origem] 
+    u = mapa[origem]  # Converte o vértice de string para índice
     TD[u] = t
     ordem_visitados.append(origem)
     t += 1
 
     for vizinho in grafo.lista[origem]:
-        if destino and encontrado[0]: 
+        if destino and encontrado[0]:  # Interrompe a busca se já encontrou o destino
             return
         v = mapa[vizinho]
-        if TD[v] == -1:
+        if TD[v] == -1:  # Vizinho não visitado
             pai[v] = origem
             _dfs(grafo, vizinho, TD, TT, pai, t, ordem_visitados, destino, encontrado)
 
     TT[u] = t
     t += 1
 
+    # Marca que encontrou o destino, se aplicável
     if origem == destino:
         encontrado[0] = True
 
-def obter_vertice_por_rotulo(grafo, rotulo):
-    return grafo.rotulos_vertices.get(rotulo, None)
+
+
+def vizinhos(grafo, u):
+    return grafo.lista[u]
+
+
+def subgrafo_subjacente(grafo):
+    subjacente = Grafo()
+
+    # Adicionando os vértices ao subgrafo
+    for vertice in grafo.lista.keys():
+        subjacente.adicionar_vertice(vertice)
+
+    # Adicionando as arestas ao subgrafo (ignora direção)
+    for origem, destinos in grafo.lista.items():
+        for destino in destinos:
+            if not subjacente.existe_aresta(origem, destino) and not subjacente.existe_aresta(destino, origem):
+                subjacente.adicionar_aresta(origem, destino)
+    
+    return subjacente
+
 
 def verifica_conectividade(grafo):
-    grafo_subjacente = subgrafo_subjacente(grafo) 
+    """
+    Verifica o nível de conectividade de um grafo:
+    - Simplesmente conexo (S-Conexo)
+    - Semifortemente conexo (SF-Conexo)
+    - Fortemente conexo (F-Conexo)
+    """
+
+    # Verifica se o grafo é simplesmente conexo
+    grafo_subjacente = subgrafo_subjacente(grafo)  # Subgrafo ignorando a direção das arestas
     componentes = busca_profundidade_componentes(grafo_subjacente)
 
     if componentes == 1:
@@ -54,20 +174,22 @@ def verifica_conectividade(grafo):
         print(f"O grafo não é simplesmente conexo. Ele possui {componentes} componentes.")
         return "Não Conexo"
 
-    grafo.num_vertices = len(grafo.lista)
+    # Verifica se o grafo é semifortemente conexo
+    num_vertices = len(grafo.lista)
     for u in grafo.lista:
         for v in grafo.lista:
             if u != v:
-                if not (alcancavel(grafo, u, v) or alcancavel(grafo, v, u)):
+                if not (isAlcancavel(grafo, u, v) or isAlcancavel(grafo, v, u)):
                     print(f"O grafo não é semifortemente conexo. Problema nos vértices ({u}, {v}).")
                     return "Simplesmente Conexo"
 
     print("O grafo é semifortemente conexo (SF-Conexo).")
 
+    # Verifica se o grafo é fortemente conexo
     for u in grafo.lista:
         for v in grafo.lista:
             if u != v:
-                if not (alcancavel(grafo, u, v) and alcancavel(grafo, v, u)):
+                if not (isAlcancavel(grafo, u, v) and isAlcancavel(grafo, v, u)):
                     print(f"O grafo não é fortemente conexo. Problema nos vértices ({u}, {v}).")
                     return "Semifortemente Conexo"
 
@@ -75,10 +197,14 @@ def verifica_conectividade(grafo):
     return "Fortemente Conexo"
 
 
-def alcancavel(grafo, origem, destino):
+
+def isAlcancavel(grafo, origem, destino):
+    """
+    Verifica se é possível alcançar `destino` a partir de `origem`.
+    """
     num_vertices = len(grafo.lista)
-    TD = [-1] * num_vertices  
-    TT = [-1] * num_vertices  
+    TD = [-1] * num_vertices  # Tempo de descoberta
+    TT = [-1] * num_vertices  # Tempo de término
     pai = [None] * num_vertices
     ordem_visitados = []
     encontrado = [False]
@@ -86,10 +212,17 @@ def alcancavel(grafo, origem, destino):
     _dfs(grafo, origem, TD, TT, pai, 0, ordem_visitados, destino, encontrado)
     return encontrado[0]
 
+
 def busca_profundidade_componentes(grafo):
+    """
+    Retorna o número de componentes conectados em um grafo.
+    """
     visitados = set()
 
     def dfs(v):
+        """
+        Realiza a busca em profundidade a partir de um vértice.
+        """
         visitados.add(v)
         for vizinho in grafo.lista.get(v, []):
             if vizinho not in visitados:
@@ -97,6 +230,7 @@ def busca_profundidade_componentes(grafo):
 
     componentes = 0
 
+    # Percorre todos os vértices do grafo
     for vertice in grafo.lista.keys():
         if vertice not in visitados:
             dfs(vertice)
@@ -104,84 +238,91 @@ def busca_profundidade_componentes(grafo):
 
     return componentes
 
-def subgrafo_subjacente(grafo):
-    # Criar um novo grafo não direcionado que será o subgrafo subjacente
-    subgrafo = Grafo(direcionado=False)
-    
-    # Copiar os vértices do grafo original para o subgrafo
-    for vertice in grafo.lista.keys():
-        subgrafo.adicionar_vertice(grafo.rotulos_vertices.get(vertice, vertice))
-    
-    # Adicionar as arestas ao subgrafo, ignorando a direção
-    for u in grafo.lista:
-        for v in grafo.lista[u]:
-            if v not in subgrafo.lista[u]:  # Evitar duplicação de arestas
-                subgrafo.adicionar_aresta(u, v, grafo.rotulos_arestas.get((u, v), None))
-    
-    return subgrafo
-
-
 def naive(grafo):
     pontes = []
     
+    # Criar o subgrafo subjacente se for direcionado
     subjacente = subgrafo_subjacente(grafo) if grafo.direcionado else grafo
 
+    # Número inicial de componentes conexos
     num_componentes = busca_profundidade_componentes(subjacente)
     print("Componentes iniciais:", num_componentes)
     
+    # Testar cada aresta
     for u in grafo.lista.keys():
         for v in grafo.lista[u]:
+            # Evitar dupla verificação para arestas não direcionadas
             if grafo.direcionado or u < v:
+                # Remover a aresta e testar conectividade
                 subjacente.remover_aresta(u, v)
                 n = busca_profundidade_componentes(subjacente)
                 print(f"Sem a aresta ({u}, {v}):", n)
                 
+                # Se o número de componentes aumentou, é uma ponte
                 if n > num_componentes:
                     pontes.append((u, v))
                 
+                # Restaurar a aresta
                 subjacente.adicionar_aresta(u, v)
     
-    return pontes
+    return print("Naive - pontes:", pontes)
+
+import random
 
 def fleury_naive(grafo):
-    # Inicializar o caminho e o conjunto de arestas visitadas
+    """
+    Implementação do Algoritmo de Fleury para encontrar um circuito ou caminho euleriano.
+    O grafo fornecido deve ser conexo e ter no máximo dois vértices de grau ímpar.
+    """
+
+    def encontrar_vertice_inicio():
+        vertices = grafo.lista.keys()
+        if grafo.direcionado:
+            # Considerar grau de saída para iniciar o vértice em grafos direcionados
+            vertices_grau_impar = [
+                v for v in vertices if grafo.grau(v)["grau_saida"] % 2 != 0
+            ]
+        else:
+            # Para grafos não direcionados, usar diretamente o grau
+            vertices_grau_impar = [v for v in vertices if grafo.grau(v) % 2 != 0]
+
+        if len(vertices_grau_impar) == 0:
+            # Grafo é Euleriano
+            return next(iter(vertices))  # Retorna um vértice arbitrário
+        elif len(vertices_grau_impar) == 2:
+            # Grafo é Semi-Euleriano
+            return vertices_grau_impar[0]  # Retorna um dos vértices de grau ímpar
+        else:
+            # Não é possível formar um ciclo ou caminho Euleriano
+            raise ValueError("O grafo não possui um caminho ou ciclo Euleriano.")
+
+    def eh_ponte(u, v):
+        """
+        Verifica se a aresta (u, v) é uma ponte usando o método naive.
+        """
+        pontes = naive(grafo)
+        return (u, v) in pontes or (v, u) in pontes
+
     caminho = []
+    vertice_atual = encontrar_vertice_inicio()
 
-    if(grafo.direcionado == False):
-        return "O grafo é direcionado"
-    
-    # Criar o subgrafo subjacente se for direcionado
-    subjacente = subgrafo_subjacente(grafo)
-    
-    # Obter as pontes no grafo
-    pontes = naive(grafo)
-    
-    # Escolher o vértice inicial
-    u = list(grafo.lista.keys())[0]  # Pode ser qualquer vértice
-    caminho.append(u)
-
-    # Realizar o caminho euleriano
     while True:
-        # Verificar se existem arestas para explorar
-        if not grafo.lista[u]:
-            break
-        
-        # Escolher uma aresta (u, v)
-        for v in grafo.lista[u]:
-            # Se a aresta (u, v) for uma ponte, deve ser escolhida
-            if (u, v) in pontes or (v, u) in pontes:
-                subjacente.remover_aresta_por_vertices(u, v)
-                caminho.append(v)
-                u = v
-                break
-            else:
-                # Caso contrário, escolher uma aresta que não seja uma ponte
-                subjacente.remover_aresta_por_vertices(u, v)
-                caminho.append(v)
-                u = v
+        caminho.append(vertice_atual)
+        vizinhos = grafo.lista[vertice_atual]
+
+        if not vizinhos:
+            break  # Terminou o caminho
+
+        for vizinho in vizinhos:
+            # Se não é ponte ou se é a única aresta disponível
+            if not eh_ponte(vertice_atual, vizinho) or len(vizinhos) == 1:
+                grafo.remover_aresta(vertice_atual, vizinho)
+                vertice_atual = vizinho
                 break
 
     return caminho
+
+
 
 def dfs(grafo, v, visitado):
     visitado[v] = True
@@ -189,33 +330,53 @@ def dfs(grafo, v, visitado):
         if not visitado[vizinho]:
             dfs(grafo, vizinho, visitado)
 
-    def construir_reverso(grafo):
-        grafo_reverso = Grafo(direcionado=True)
-        for u in grafo.lista:
-            for v in grafo.lista[u]:
-                grafo_reverso.adicionar_aresta(v, u)
-        return grafo_reverso
+def kosaraju(grafo):
+    """
+    Implementação do algoritmo de Kosaraju para encontrar os componentes fortemente conectados.
+    """
+    # Passo 1: Realiza DFS no grafo original e empilha os vértices na ordem de término.
+    def dfs(grafo, v, visitado, pilha):
+        visitado[v] = True
+        for vizinho in grafo.lista[v]:
+            if not visitado[vizinho]:
+                dfs(grafo, vizinho, visitado, pilha)
+        pilha.append(v)  # Empilha o vértice ao final da DFS
 
-    visitados = {vertice: False for vertice in grafo.lista}
-    stack = []
-    for vertice in grafo.lista:
-        if not visitados[vertice]:
-            dfs(grafo, vertice, visitados, stack)
+    # Passo 2: Construa o grafo transposto
+    grafo_transposto = grafo.obter_transposto()
 
-    grafo_reverso = construir_reverso(grafo)
+    # Passo 3: Realiza DFS no grafo transposto na ordem da pilha
+    def dfs_transposto(grafo, v, visitado, componente):
+        visitado[v] = True
+        componente.append(v)
+        for vizinho in grafo.lista[v]:
+            if not visitado[vizinho]:
+                dfs_transposto(grafo, vizinho, visitado, componente)
 
-    visitados = {vertice: False for vertice in grafo_reverso.lista}
-    cfc = []
-    while stack:
-        vertice = stack.pop()
-        if not visitados[vertice]:
+    # Fase 1: Empilhar os vértices na ordem de término
+    visitado = {v: False for v in grafo.lista}
+    pilha = []
+    
+    for v in grafo.lista:
+        if not visitado[v]:
+            dfs(grafo, v, visitado, pilha)
+    
+    # Fase 2: Realizar DFS no grafo transposto, na ordem inversa da pilha
+    visitado = {v: False for v in grafo.lista}
+    cfc = []  # Lista que armazenará os componentes fortemente conectados
+
+    while pilha:
+        v = pilha.pop()
+        if not visitado[v]:
             componente = []
-            dfs(grafo_reverso, vertice, visitados, componente)
+            dfs_transposto(grafo_transposto, v, visitado, componente)
             cfc.append(componente)
+    
+    return cfc  # Retorna a lista de componentes fortemente conectados
 
-    return cfc
 
 def numero_componentes_conexos(grafo):
+    """Retorna o número de componentes conexos no grafo."""
     visitados = {vertice: False for vertice in grafo.lista}
 
     def dfs(vertice):
@@ -232,7 +393,11 @@ def numero_componentes_conexos(grafo):
     
     return componentes
 
+def obter_vizinhos(grafo, vertice):
+        return grafo.lista[vertice]
+
 def checar_ponte(grafo, u, v):
+
     copia = Grafo(grafo.num_vertices, direcionado=False)
     copia.lista = [adjacentes[:] for adjacentes in grafo.lista]
     if v in copia.lista[u]:
@@ -313,6 +478,8 @@ def tarjan(grafo):
 
     return pontes
 
+
+
 def fleury(grafo):
     graus = [len(grafo.lista[v]) for v in range(grafo.num_vertices)]
     impares = [v for v in range(grafo.num_vertices) if graus[v] % 2 != 0]
@@ -334,35 +501,34 @@ def fleury(grafo):
 
     return caminho
 
-
-def fleury_tarjan(grafo):
+def fleury_modificado(grafo):
     # Identificar as pontes do grafo usando Tarjan
-    pontes = set(tarjan(grafo))  # chama o tarjan p identificar as pontes, sao armazenadas em um conjunto set
-    graus = [len(grafo.lista[v]) for v in range(grafo.num_vertices)]  # calcula o grau de cada vertice, p cada vertice conta o num de arestas na sua lista de adjacencia
-    impares = [v for v in range(grafo.num_vertices) if graus[v] % 2 != 0] # identifica os vertices de grau impar
+    pontes = set(tarjan(grafo))  # Usar um conjunto para busca eficiente
+    graus = [len(grafo.lista[v]) for v in range(grafo.num_vertices)]
+    impares = [v for v in range(grafo.num_vertices) if graus[v] % 2 != 0]
 
     # Verificar se o grafo é euleriano ou semi-euleriano
     if len(impares) > 2:
         return "O grafo não é euleriano."
 
-    caminho = [] # lista que armazenara o caminho euleriano encontrado
-    vertice_atual = impares[0] if impares else 0 # comeca em um vertice de grau impar se houver, senao comeca no vertice 0
-    stack = [vertice_atual] # pilha para armazenar os vertices durante a exploracao do caminho
-    s = set()  # conjunto para armazenar vértices visitados
+    caminho = []
+    vertice_atual = impares[0] if impares else 0
+    stack = [vertice_atual]
+    s = set()  # Conjunto para armazenar vértices visitados
 
-    while stack:  # enquanto houver vertices na pilha o algoritmo continua a exploracao
-        u = stack[-1] # obtem o vertice no topo da pilha
-        s.add(u)  # adiciona o vértice atual ao conjunto S
+    while stack:
+        u = stack[-1]
+        s.add(u)  # Adiciona o vértice atual ao conjunto S
 
         # Verificar as arestas disponíveis para escolher a próxima
-        arestas_disponiveis = [(u, v) for v in grafo.lista[u] if (u, v) not in pontes and (v, u) not in pontes] # encontra as arestas disponíveis para sair do vertice atual, excluindo as pontes identificadas
-                
+        arestas_disponiveis = [(u, v) for v in grafo.lista[u] if (u, v) not in pontes and (v, u) not in pontes]
+        
         # Se não houver arestas disponíveis que não sejam pontes, usar qualquer outra
-        if not arestas_disponiveis: 
-            if grafo.lista[u]: 
-                v = grafo.lista[u].pop() 
+        if not arestas_disponiveis:
+            if grafo.lista[u]:
+                v = grafo.lista[u].pop()
                 grafo.lista[v].remove(u)  # Remover a aresta simétrica
-                stack.append(v) 
+                stack.append(v)
             else:
                 caminho.append(stack.pop())
         else:
@@ -419,31 +585,46 @@ def salvar_grafo_gexf(grafo, nome_arquivo):
     except Exception as e:
         print(f"Erro ao salvar o grafo: {e}")
 
-
-
-
-
 def carregar_grafo_gexf(nome_arquivo):
+    pasta = "arquivos"
 
-    with open(nome_arquivo, "r", encoding="utf-8") as arquivo:
-        linhas = arquivo.readlines()
+    # Verifica se o nome do arquivo já contém o caminho da pasta, se não, ajusta
+    if not nome_arquivo.startswith(pasta):
+        nome_arquivo = pasta + "/" + nome_arquivo
 
-    grafo = Grafo(direcionado=any('defaultedgetype="directed"' in linha for linha in linhas))
+    try:
+        with open(nome_arquivo, "r", encoding="utf-8") as arquivo:
+            linhas = arquivo.readlines()
 
-    for linha in linhas:
-        linha = linha.strip()
-        if linha.startswith("<node"):
-            vertice_id = linha.split('id="')[1].split('"')[0]
-            rotulo = linha.split('label="')[1].split('"')[0] if 'label="' in linha else "sem rótulo"
-            grafo.adicionar_vertice(vertice_id, rotulo)
-        elif linha.startswith("<edge"):
-            origem = linha.split('source="')[1].split('"')[0]
-            destino = linha.split('target="')[1].split('"')[0]
-            rotulo = linha.split('label="')[1].split('"')[0] if 'label="' in linha else None
-            grafo.adicionar_aresta(origem, destino, rotulo)
+        grafo = Grafo(direcionado=any('defaultedgetype="directed"' in linha for linha in linhas))
 
-    print(f"Grafo carregado do arquivo '{nome_arquivo}'.")
-    return grafo
+        for linha in linhas:
+            linha = linha.strip()
+
+            # Verifica se a linha contém um nó e possui o atributo 'id'
+            if linha.startswith("<node") and 'id="' in linha:
+                try:
+                    vertice_id = linha.split('id="')[1].split('"')[0]
+                    rotulo = linha.split('label="')[1].split('"')[0] if 'label="' in linha else "sem rótulo"
+                    grafo.adicionar_vertice(vertice_id, rotulo)
+                except IndexError:
+                    print(f"Erro ao processar o nó: {linha}")
+
+            # Verifica se a linha contém uma aresta
+            elif linha.startswith("<edge"):
+                try:
+                    origem = linha.split('source="')[1].split('"')[0]
+                    destino = linha.split('target="')[1].split('"')[0]
+                    rotulo = linha.split('label="')[1].split('"')[0] if 'label="' in linha else None
+                    grafo.adicionar_aresta(origem, destino, rotulo)
+                except IndexError:
+                    print(f"Erro ao processar a aresta: {linha}")
+
+        print(f"Grafo carregado do arquivo '{nome_arquivo}'.")
+        return grafo
+
+    except Exception as e:
+        print(f"Erro ao carregar o grafo: {e}")
 
 def gerar_numero_aleatorio(seed):
     seed = (seed * 9301 + 49297) % 233280
@@ -489,63 +670,3 @@ def gerar_grafo_aleatorio(num_vertices, num_arestas, direcionado=False):
             grafo.adicionar_aresta(u, v, rotulo=rotulo_aresta)
 
     return grafo
-
-def kosaraju(grafo):
-    """
-    Implementação do algoritmo de Kosaraju para encontrar os componentes fortemente conectados.
-    """
-    # Passo 1: Realiza DFS no grafo original e empilha os vértices na ordem de término.
-    def dfs(grafo, v, visitado, pilha):
-        visitado[v] = True
-        for vizinho in grafo.lista[v]:
-            if not visitado[vizinho]:
-                dfs(grafo, vizinho, visitado, pilha)
-        pilha.append(v)  # Empilha o vértice ao final da DFS
-
-    # Passo 2: Construa o grafo transposto
-    grafo_transposto = obter_transposto(grafo)
-
-    # Passo 3: Realiza DFS no grafo transposto na ordem da pilha
-    def dfs_transposto(grafo, v, visitado, componente):
-        visitado[v] = True
-        componente.append(v)
-        for vizinho in grafo.lista[v]:
-            if not visitado[vizinho]:
-                dfs_transposto(grafo, vizinho, visitado, componente)
-
-    # Fase 1: Empilhar os vértices na ordem de término
-    visitado = {v: False for v in grafo.lista}
-    pilha = []
-    
-    for v in grafo.lista:
-        if not visitado[v]:
-            dfs(grafo, v, visitado, pilha)
-    
-    # Fase 2: Realizar DFS no grafo transposto, na ordem inversa da pilha
-    visitado = {v: False for v in grafo.lista}
-    cfc = []  # Lista que armazenará os componentes fortemente conectados
-
-    while pilha:
-        v = pilha.pop()
-        if not visitado[v]:
-            componente = []
-            dfs_transposto(grafo_transposto, v, visitado, componente)
-            cfc.append(componente)
-    
-    return cfc  # Retorna a lista de componentes fortemente conectados
-
-
-def obter_transposto(grafo):
-    # Cria um grafo vazio para armazenar o transposto
-    transposto = Grafo(direcionado=True)  # Assumindo que o grafo original é direcionado
-
-    # Adiciona os vértices do grafo original no grafo transposto
-    for vertice in grafo.lista.keys():
-        transposto.adicionar_vertice(vertice)
-
-    # Adiciona as arestas invertidas ao grafo transposto
-    for u, destinos in grafo.lista.items():
-        for v in destinos:
-            transposto.adicionar_aresta(v, u)  # Inverte a direção da aresta
-
-    return transposto
